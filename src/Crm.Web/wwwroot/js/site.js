@@ -1,4 +1,4 @@
-﻿// ===== App shell behaviour: sidebar, toasts =====
+// ===== App shell behaviour: sidebar, toasts =====
 (function () {
     'use strict';
 
@@ -17,6 +17,24 @@
         scrim.addEventListener('click', () => setOpen(false));
         document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
     }
+
+
+    // Collapsible nav groups: click a .nav-group to hide/show its links
+    document.querySelectorAll('.nav-group').forEach(g => {
+        g.classList.add('nav-group--toggle');
+        g.setAttribute('role', 'button');
+        g.setAttribute('tabindex', '0');
+        const toggle = () => {
+            const collapsed = g.classList.toggle('is-collapsed');
+            let el = g.nextElementSibling;
+            while (el && !el.classList.contains('nav-group')) {
+                el.classList.toggle('is-hidden', collapsed);
+                el = el.nextElementSibling;
+            }
+        };
+        g.addEventListener('click', toggle);
+        g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+    });
 
     // Highlight active nav link
     const path = location.pathname.toLowerCase();

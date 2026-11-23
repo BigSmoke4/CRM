@@ -157,3 +157,9 @@ code { background: var(--bg); padding: 2px 6px; border-radius: 6px; font-size: .
 .note--internal{opacity:.75;border-left:3px solid var(--inset)}
 .text-danger{color:var(--red-text)}
 @media(max-width:800px){.chat-layout{grid-template-columns:1fr}}
+
+/* collapsible nav groups */
+.nav-group--toggle { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+.nav-group--toggle::after { content: "BE"; font-size: .8rem; opacity: .6; transition: transform var(--dur) var(--ease); }
+.nav-group--toggle.is-collapsed::after { transform: rotate(-90deg); }
+.nav-list li.is-hidden { display: none; }
