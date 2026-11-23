@@ -1,9 +1,25 @@
 @model Crm.Web.ViewModels.SetupVm
-@{ ViewData["Title"] = "Create your account"; }
-<div class="auth-card neu">
-    <h1 class="auth-title">Create your workspace</h1>
-    <p class="auth-sub">Start your own CRM — your data is completely isolated.</p>
-    <form method="post" class="form">
+@{
+    ViewData["Title"] = "Create account";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in - Enterprise CRM</title>
+    <link rel="stylesheet" href="~/css/core/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/neumorphic.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head><body class="auth-body">
+<div class="auth-card neu auth-card--wide">
+    <div class="auth-card__brand">Enterprise<span>CRM</span></div>
+    <h1>Create your workspace</h1>
+    <p class="auth-card__sub">Start your own CRM — your data is completely isolated.</p>
+    <form method="post" asp-action="Register">
         @Html.AntiForgeryToken()
         <div asp-validation-summary="ModelOnly" class="form-errors"></div>
         <label class="field"><span>Organization name *</span><input asp-for="OrganizationName" class="input" required placeholder="Acme Inc." /></label>
@@ -17,4 +33,5 @@
     </form>
     <p class="auth-foot">Already have an account? <a href="/Account/Login">Sign in</a></p>
 </div>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+</body>
+</html>
