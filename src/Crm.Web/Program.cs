@@ -84,33 +84,11 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddHttpClient();
 
-// Data Protection key ring: try app dir, then temp — never crash startup if a path is unwritable.
-var configuredKeyRing = builder.Configuration["DataProtection:KeyRingPath"];
-var keyRingCandidates = new List<string>();
-if (!string.IsNullOrWhiteSpace(configuredKeyRing)) keyRingCandidates.Add(configuredKeyRing);
-keyRingCandidates.Add(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys"));
-keyRingCandidates.Add(Path.Combine(Path.GetTempPath(), "crm-dpkeys"));
-
-string? keyRingPath = null;
-foreach (var candidate in keyRingCandidates)
-{
-    try
-    {
-        Directory.CreateDirectory(candidate);
-        // verify writable
-        var probe = Path.Combine(candidate, ".probe");
-        File.WriteAllText(probe, "ok");
-        File.Delete(probe);
-        keyRingPath = candidate;
-        break;
-    }
-    catch { /* try next */ }
-}
-
-var dpBuilder = builder.Services.AddDataProtection().SetApplicationName("Crm");
-if (keyRingPath != null)
-    dpBuilder.PersistKeysToFileSystem(new DirectoryInfo(keyRingPath));
-// else: in-memory keys (works within a single process lifetime)
+// Data Protection keys stored in the database — survives redeploys, app-pool recycles,
+// read-only content roots, and multi-instance hosting (shared hosting safe).
+builder.Services.AddDataProtection()
+    .SetApplicationName("Crm")
+    .PersistKeysToDbContext<ApplicationDbContext>();
 
 builder.Services.AddControllersWithViews(options =>
 {
