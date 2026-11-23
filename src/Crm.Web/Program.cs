@@ -6,6 +6,7 @@ using Crm.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -83,11 +84,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
 builder.Services.AddHttpClient();
 
-// Data Protection key ring: persisted outside the webroot so it survives redeploys.
+// Data Protection key ring: persisted inside the app folder so it survives redeploys/recycles.
 var configuredKeyRing = builder.Configuration["DataProtection:KeyRingPath"];
 var keyRingPath = string.IsNullOrWhiteSpace(configuredKeyRing)
-    ? Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", ".keys"))
+    ? Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "App_Data", "keys"))
     : configuredKeyRing;
+Directory.CreateDirectory(keyRingPath);
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keyRingPath))
     .SetApplicationName("Crm");
@@ -115,6 +117,15 @@ builder.Services.AddRateLimiter(options =>
 });
 
 var app = builder.Build();
+
+// Honor X-Forwarded-* from the hosting reverse proxy (runasp/IIS) so scheme/cookies/remote IP are correct.
+var fwdOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+};
+fwdOptions.KnownNetworks.Clear();
+fwdOptions.KnownProxies.Clear();
+app.UseForwardedHeaders(fwdOptions);
 
 // ---------- Pipeline ----------
 if (!app.Environment.IsDevelopment())
