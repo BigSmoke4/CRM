@@ -1,0 +1,79 @@
+@model Crm.Data.Entities.Contact
+@{
+    ViewData["Title"] = $"{Model.FirstName} {Model.LastName}";
+    var activities = (List<Crm.Data.Entities.Activity>)ViewBag.Activities;
+    var notes = (List<Crm.Data.Entities.ContactNote>)ViewBag.Notes;
+    bool canEdit = ViewBag.CanEdit;
+}
+
+<div class="detail-grid">
+    <div class="detail-main">
+        <section class="panel neu">
+            <div class="panel__head">
+                <div>
+                    <h2 class="panel__title">@Model.FirstName @Model.LastName</h2>
+                    <p class="panel__sub">@(Model.JobTitle) @(Model.Account != null ? $"· {Model.Account.Name}" : "")</p>
+                </div>
+                <div class="btn-row">
+                    <a class="btn btn--sm" href="/Activities/Create?contactId=@Model.Id">+ Activity</a>
+                    @if (canEdit) { <a class="btn btn--sm btn--primary" href="/Contacts/Edit/@Model.Id">Edit</a> }
+                </div>
+            </div>
+            <dl class="detail-list">
+                <div><dt>Email</dt><dd>@Model.Email</dd></div>
+                <div><dt>Phone</dt><dd>@Model.Phone</dd></div>
+                <div><dt>Mobile</dt><dd>@Model.Mobile</dd></div>
+                <div><dt>WhatsApp</dt><dd>@Model.WhatsAppNumber</dd></div>
+                <div><dt>Location</dt><dd>@string.Join(", ", new[]{Model.City, Model.State, Model.Country}.Where(s => !string.IsNullOrEmpty(s)))</dd></div>
+                <div><dt>Website</dt><dd>@if (Model.Website != null) { <a href="@Model.Website" target="_blank" rel="noopener">@Model.Website</a> }</dd></div>
+                <div><dt>LinkedIn</dt><dd>@if (Model.LinkedInUrl != null) { <a href="@Model.LinkedInUrl" target="_blank" rel="noopener">Profile</a> }</dd></div>
+                <div><dt>Source</dt><dd>@Model.Source</dd></div>
+                <div><dt>Type / Status</dt><dd>@Model.CustomerType · @Model.LeadStatus (score @Model.LeadScore)</dd></div>
+                <div><dt>Owner</dt><dd>@(Model.AssignedTo != null ? $"{Model.AssignedTo.FirstName} {Model.AssignedTo.LastName}" : "—")</dd></div>
+                <div><dt>Tags</dt><dd>@Model.Tags</dd></div>
+                <div><dt>Created</dt><dd>@Model.CreatedAt.ToString("yyyy-MM-dd")</dd></div>
+            </dl>
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <h3 class="subhead">Notes</h3>
+                <p>@Model.Notes</p>
+            }
+        </section>
+
+        @if (notes.Any())
+        {
+            <section class="panel neu">
+                <div class="panel__head"><h2 class="panel__title">Contact notes</h2></div>
+                <ul class="note-list">
+                    @foreach (var n in notes)
+                    {
+                        <li><p>@n.Body</p><small>@n.CreatedAt.ToString("MMM d, yyyy")</small></li>
+                    }
+                </ul>
+            </section>
+        }
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Timeline</h2></div>
+            @if (activities.Any())
+            {
+                <ul class="activity-feed">
+                    @foreach (var a in activities)
+                    {
+                        <li class="activity-feed__item">
+                            <span class="badge">@a.Type</span>
+                            <div>
+                                <strong>@a.Subject</strong>
+                                @if (!string.IsNullOrEmpty(a.Body)) { <p class="feed-body">@a.Body</p> }
+                                <small>@a.CreatedAt.ToString("MMM d, HH:mm")@(a.DueAt != null ? $" · due {a.DueAt:MMM d}" : "")</small>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            }
+            else { <p class="panel__sub">No activity recorded yet.</p> }
+        </section>
+    </aside>
+</div>

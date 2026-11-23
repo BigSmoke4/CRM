@@ -1,0 +1,81 @@
+@model Crm.Data.Entities.Organization
+@{ ViewData["Title"] = "Settings"; }
+<div class="page-grid">
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Organization</h2></div>
+    <form method="post" action="/Settings/SaveOrganization" class="form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="form-grid">
+            <label class="field"><span>Name</span><input asp-for="Name" class="input" /></label>
+            <label class="field"><span>Currency</span><input asp-for="Currency" class="input" maxlength="3" /></label>
+            <label class="field"><span>Timezone</span><input asp-for="TimeZone" class="input" placeholder="UTC" /></label>
+            <label class="field"><span>Primary color</span><input asp-for="PrimaryColor" class="input" placeholder="#10b981" /></label>
+        </div>
+        <button class="btn btn--primary" type="submit">Save</button>
+    </form>
+    <p class="field-hint">Email (SMTP) is configured via <code>appsettings.json → Smtp</code> or environment variables.</p>
+</section>
+
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Custom fields</h2><p class="panel__sub">Define extra fields per entity — values stored as JSON on records.</p></div>
+    <table class="app-table">
+        <thead><tr><th>Entity</th><th>Name</th><th>Label</th><th>Type</th><th>Required</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var f in (List<Crm.Data.Entities.CustomFieldDefinition>)ViewBag.CustomFields)
+        {
+            <tr>
+                <td>@f.EntityType</td><td>@f.Name</td><td>@f.Label</td><td>@f.FieldType</td>
+                <td>@(f.IsRequired ? "Yes" : "")</td>
+                <td><form method="post" action="/Settings/CustomFieldDelete/@f.Id" class="inline-form">@Html.AntiForgeryToken()<button class="btn btn--sm btn--danger">✕</button></form></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <form method="post" action="/Settings/CustomFieldSave" class="filter-bar">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="00000000-0000-0000-0000-000000000000" />
+        <select name="EntityType" class="input input--sm"><option>Contact</option><option>Account</option><option>Lead</option><option>Deal</option><option>Ticket</option><option>Product</option></select>
+        <input name="Name" class="input input--sm" placeholder="field_name" required />
+        <input name="Label" class="input input--sm" placeholder="Display label" required />
+        <select name="FieldType" class="input input--sm"><option>text</option><option>number</option><option>date</option><option>boolean</option><option>select</option></select>
+        <button class="btn btn--sm btn--primary">Add field</button>
+    </form>
+</section>
+
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Pipelines</h2><p class="panel__sub">Deal stages per pipeline.</p></div>
+    @foreach (var p in (List<Crm.Data.Entities.Pipeline>)ViewBag.Pipelines)
+    {
+        <h3 class="subhead">@p.Name @(p.IsDefault ? "(default)" : "")</h3>
+        <table class="app-table">
+            <tbody>
+            @foreach (var s in p.Stages.OrderBy(x => x.SortOrder))
+            {
+                <tr><td>@s.Name</td><td>@s.Type</td><td>@s.Probability%</td></tr>
+            }
+            </tbody>
+        </table>
+        <form method="post" action="/Settings/StageAdd" class="filter-bar">@Html.AntiForgeryToken()
+            <input type="hidden" name="pipelineId" value="@p.Id" />
+            <input name="name" class="input input--sm" placeholder="New stage name" required />
+            <input name="probability" class="input input--sm" type="number" min="0" max="100" value="10" style="width:90px" />
+            <button class="btn btn--sm" type="submit">+ Stage</button>
+        </form>
+    }
+</section>
+
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Audit log</h2><p class="panel__sub">Recent security-relevant actions.</p></div>
+    <table class="app-table">
+        <thead><tr><th>When</th><th>User</th><th>Action</th><th>Entity</th></tr></thead>
+        <tbody>
+        @foreach (var a in (List<Crm.Data.Entities.AuditLog>)ViewBag.AuditLogs)
+        {
+            <tr><td>@a.CreatedAt.ToString("MM-dd HH:mm")</td><td>@a.UserName</td><td>@a.Action</td><td>@a.EntityType</td></tr>
+        }
+        </tbody>
+    </table>
+</section>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

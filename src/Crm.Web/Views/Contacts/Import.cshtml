@@ -1,0 +1,19 @@
+@{
+    ViewData["Title"] = "Import contacts";
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Import contacts</h2></div>
+    <p class="panel__sub">Upload a CSV file with columns matching contact fields (FirstName, LastName, Email, Phone, JobTitle, Company, City, Country, Source…). Duplicate emails within your organization are skipped.</p>
+
+    <form method="post" action="/Import/Contacts" enctype="multipart/form-data" class="form">
+        @Html.AntiForgeryToken()
+        <label class="field"><span>CSV file</span><input type="file" name="file" accept=".csv,text/csv" class="input" required /></label>
+        <div class="btn-row">
+            <button class="btn btn--primary" type="submit">Upload &amp; preview</button>
+            <a class="btn" href="/Contacts">Cancel</a>
+        </div>
+    </form>
+
+    <h3 class="subhead">Expected columns</h3>
+    <p class="panel__sub"><code>FirstName,LastName,Email,Phone,Mobile,JobTitle,AccountName,AddressLine1,City,State,PostalCode,Country,Website,LinkedIn,Facebook,WhatsApp,Source,Tags,Notes</code></p>
+</section>

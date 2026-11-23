@@ -1,0 +1,19 @@
+@model Crm.Web.ViewModels.TicketFormVm
+@{ ViewData["Title"] = "New ticket"; }
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Create ticket</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+        <div class="form-grid">
+            <label class="field" style="grid-column:1/-1"><span>Subject *</span><input asp-for="Subject" class="input" required /></label>
+            <label class="field"><span>Priority</span><select asp-for="Priority" asp-items="ViewBag.Priorities" class="input"></select></label>
+            <label class="field"><span>Category</span><input asp-for="Category" class="input" placeholder="billing, bug, how-to…" /></label>
+            <label class="field"><span>Contact</span><select asp-for="ContactId" asp-items="ViewBag.Contacts" class="input"><option value="">—</option></select></label>
+            <label class="field"><span>Assignee</span><select asp-for="AssigneeId" asp-items="ViewBag.Users" class="input"><option value="">— Me —</option></select></label>
+        </div>
+        <label class="field"><span>Description *</span><textarea asp-for="Description" class="input" rows="5" required></textarea></label>
+        <div class="btn-row"><button class="btn btn--primary" type="submit">Create ticket</button><a class="btn" href="/Tickets">Cancel</a></div>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

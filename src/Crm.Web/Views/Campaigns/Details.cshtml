@@ -1,0 +1,29 @@
+@model Crm.Data.Entities.Campaign
+@{ ViewData["Title"] = Model.Name; }
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">@Model.Name</h2><p class="panel__sub">@Model.Status · @Model.Channel</p></div>
+        <div class="btn-row">
+            @if (Model.Status == Crm.Data.Entities.CampaignStatus.Draft)
+            {
+                <form method="post" action="/Campaigns/Send/@Model.Id" class="inline-form" onsubmit="return confirm('Send this campaign to all opted-in contacts with email?');">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn--primary" type="submit">Send campaign</button>
+                </form>
+            }
+            <form method="post" action="/Campaigns/Delete/@Model.Id" class="inline-form" onsubmit="return confirm('Delete campaign?');">
+                @Html.AntiForgeryToken()<button class="btn btn--danger" type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+    <dl class="detail-list">
+        <div><dt>Subject</dt><dd>@Model.Subject</dd></div>
+        <div><dt>Recipients</dt><dd>@Model.RecipientsCount</dd></div>
+        <div><dt>Sent</dt><dd>@Model.SentCount</dd></div>
+        <div><dt>Opened</dt><dd>@Model.OpenedCount</dd></div>
+        <div><dt>Clicked</dt><dd>@Model.ClickedCount</dd></div>
+        <div><dt>Unsubscribed</dt><dd>@Model.UnsubscribedCount</dd></div>
+    </dl>
+    <h3 class="subhead">Preview</h3>
+    <div class="notice">@Html.Raw(Model.BodyHtml)</div>
+</section>

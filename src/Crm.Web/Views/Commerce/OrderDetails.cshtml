@@ -1,0 +1,49 @@
+@model Crm.Data.Entities.Order
+@{
+    ViewData["Title"] = Model.OrderNumber;
+    var products = (List<Crm.Data.Entities.Product>)ViewBag.Products;
+}
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">@Model.OrderNumber</h2><p class="panel__sub">@Model.Status · @Model.OrderDate.ToString("yyyy-MM-dd")</p></div>
+        <div class="btn-row">
+            @foreach (var s in Enum.GetValues<Crm.Data.Entities.OrderStatus>())
+            {
+                if (s != Model.Status)
+                {
+                    <form method="post" action="/Commerce/SetOrderStatus/@Model.Id" class="inline-form">@Html.AntiForgeryToken()
+                        <input type="hidden" name="status" value="@s" />
+                        <button class="btn btn--sm" type="submit">@s</button></form>
+                }
+            }
+        </div>
+    </div>
+    <p>Customer: @(Model.Contact != null ? $"{Model.Contact.FirstName} {Model.Contact.LastName}" : "—")</p>
+
+    <h3 class="subhead">Line items</h3>
+    <table class="app-table">
+        <thead><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Total</th></tr></thead>
+        <tbody>
+        @foreach (var l in Model.Lines)
+        {
+            <tr><td>@l.Description</td><td>@l.Quantity</td><td>@l.UnitPrice.ToString("C2")</td><td>@l.LineTotal.ToString("C2")</td></tr>
+        }
+        @if (!Model.Lines.Any()) { <tr><td colspan="4" class="empty-state">No items.</td></tr> }
+        </tbody>
+    </table>
+    <dl class="detail-list" style="margin-top:12px">
+        <div><dt>Subtotal</dt><dd>@Model.Subtotal.ToString("C2")</dd></div>
+        <div><dt>Discount</dt><dd>@Model.Discount.ToString("C2")</dd></div>
+        <div><dt>Tax</dt><dd>@Model.Tax.ToString("C2")</dd></div>
+        <div><dt>Total</dt><dd><strong>@Model.Total.ToString("C2") @Model.Currency</strong></dd></div>
+    </dl>
+
+    <h3 class="subhead">Add product</h3>
+    <form method="post" action="/Commerce/AddOrderLine" class="filter-bar">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="orderId" value="@Model.Id" />
+        <select name="productId" class="input input--sm" asp-items="@(new SelectList(products, "Id", "Name"))"><option value="">Select product…</option></select>
+        <input name="qty" type="number" min="1" value="1" class="input input--sm" style="width:80px" />
+        <button class="btn btn--sm btn--primary" type="submit">Add</button>
+    </form>
+</section>

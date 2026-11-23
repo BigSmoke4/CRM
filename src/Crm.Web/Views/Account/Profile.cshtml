@@ -1,0 +1,35 @@
+@model Crm.Data.Entities.ApplicationUser
+@{
+    ViewData["Title"] = "My Profile";
+}
+<div class="page-grid">
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Profile</h2></div>
+        <dl class="detail-list">
+            <div><dt>Name</dt><dd>@Model.FirstName @Model.LastName</dd></div>
+            <div><dt>Email</dt><dd>@Model.Email</dd></div>
+            <div><dt>Roles</dt><dd>@string.Join(", ", User.Claims.Where(c => c.Type == System.Security.Claims.ClaimTypes.Role).Select(c => c.Value))</dd></div>
+            <div><dt>Member since</dt><dd>@Model.CreatedAt.ToString("yyyy-MM-dd")</dd></div>
+        </dl>
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Change password</h2></div>
+        <form asp-action="ChangePassword" method="post" class="form">
+            @Html.AntiForgeryToken()
+            <label class="field"><span>Current password</span><input name="currentPassword" type="password" class="input" required autocomplete="current-password" /></label>
+            <label class="field"><span>New password</span><input name="newPassword" type="password" class="input" required autocomplete="new-password" />
+                <small class="field-hint">Min. 10 characters with upper, lower, digit and symbol.</small></label>
+            <button class="btn btn--primary" type="submit">Update password</button>
+        </form>
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Two-factor authentication</h2></div>
+        <p class="panel__sub">Add an extra layer of security using an authenticator app (TOTP).</p>
+        <div class="btn-row">
+            <form asp-action="Enable2fa" method="post">@Html.AntiForgeryToken()<button class="btn" type="submit">Enable 2FA</button></form>
+            <form asp-action="Disable2fa" method="post">@Html.AntiForgeryToken()<button class="btn btn--danger" type="submit">Disable 2FA</button></form>
+        </div>
+    </section>
+</div>

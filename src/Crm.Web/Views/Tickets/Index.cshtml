@@ -1,0 +1,44 @@
+@model List<Crm.Data.Entities.Ticket>
+@{
+    ViewData["Title"] = "Tickets";
+    var status = ViewBag.Status as string; var priority = ViewBag.Priority as string; var q = ViewBag.Q as string;
+    int page = ViewBag.Page; int totalPages = ViewBag.TotalPages; int total = ViewBag.Total;
+    var statuses = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Statuses;
+    var priorities = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Priorities;
+}
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Support tickets</h2><p class="panel__sub">@total tickets</p></div>
+        <a class="btn btn--primary" href="/Tickets/Create">+ New ticket</a>
+    </div>
+    <form method="get" class="filter-bar">
+        <input name="q" value="@q" class="input input--sm" placeholder="Search…" />
+        <select name="status" class="input input--sm"><option value="">All statuses</option>
+            @foreach (var s in statuses) { <option value="@s.Value" selected="@(status == s.Value)">@s.Text</option> }</select>
+        <select name="priority" class="input input--sm"><option value="">All priorities</option>
+            @foreach (var p in priorities) { <option value="@p.Value" selected="@(priority == p.Value)">@p.Text</option> }</select>
+        <button class="btn btn--sm" type="submit">Filter</button>
+    </form>
+    <table class="app-table">
+        <thead><tr><th>Ticket</th><th>Subject</th><th>Contact</th><th>Priority</th><th>Status</th><th>SLA due</th><th>Assignee</th></tr></thead>
+        <tbody>
+        @foreach (var t in Model)
+        {
+            <tr>
+                <td><a href="/Tickets/Details/@t.Id">@t.TicketNumber</a></td>
+                <td>@t.Subject</td>
+                <td>@(t.Contact != null ? $"{t.Contact.FirstName} {t.Contact.LastName}" : "—")</td>
+                <td><span class="chip chip--@(t.Priority == Crm.Data.Entities.TicketPriority.Urgent || t.Priority == Crm.Data.Entities.TicketPriority.High ? "unqualified" : "")">@t.Priority</span></td>
+                <td><span class="chip">@t.Status</span></td>
+                <td class="@(t.SlaDueAt < DateTimeOffset.UtcNow && t.Status != Crm.Data.Entities.TicketStatus.Resolved && t.Status != Crm.Data.Entities.TicketStatus.Closed ? "text-danger" : "")">@t.SlaDueAt?.ToString("MM-dd HH:mm")</td>
+                <td>@(t.Assignee != null ? $"{t.Assignee.FirstName} {t.Assignee.LastName}" : "—")</td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="7" class="empty-state">No tickets.</td></tr> }
+        </tbody>
+    </table>
+    @if (totalPages > 1)
+    {
+        <nav class="pager">@for (var i = 1; i <= totalPages; i++) { <a class="pager__item @(i == page ? "is-active" : "")" href="/Tickets?page=@i&status=@status&priority=@priority&q=@q">@i</a> }</nav>
+    }
+</section>

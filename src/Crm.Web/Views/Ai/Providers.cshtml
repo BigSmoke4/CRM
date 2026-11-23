@@ -1,0 +1,62 @@
+@model List<Crm.Data.Entities.AiProviderConfig>
+@{ ViewData["Title"] = "AI Providers"; }
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">AI providers</h2><p class="panel__sub">Bring your own API keys — OpenAI, Anthropic, Gemini, or any OpenAI-compatible endpoint.</p></div>
+        <button class="btn btn--primary" onclick="document.getElementById('newProvider').hidden=false">+ Add provider</button>
+    </div>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>Type</th><th>Model</th><th>Default</th><th>Enabled</th><th>Tokens (mo)</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td><strong>@p.Name</strong></td><td>@p.ProviderType</td><td>@p.Model</td>
+                <td>@(p.IsDefault ? "★" : "")</td><td>@(p.IsEnabled ? "Yes" : "No")</td>
+                <td>@p.TokensUsedThisMonth@(p.MonthlyTokenBudget > 0 ? $" / {p.MonthlyTokenBudget}" : "")</td>
+                <td class="row-actions">
+                    <button class="btn btn--sm" onclick="testProvider('@p.Id')">Test</button>
+                    <form method="post" action="/Ai/ProviderDelete/@p.Id" class="inline-form" onsubmit="return confirm('Delete provider?');">@Html.AntiForgeryToken()<button class="btn btn--sm btn--danger">✕</button></form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="7" class="empty-state">No providers. Add your OpenAI/Anthropic/Gemini API key to enable AI features.</td></tr> }
+        </tbody>
+    </table>
+    <div id="testOut" class="notice" hidden></div>
+</section>
+
+<section class="panel neu" id="newProvider">
+    <div class="panel__head"><h2 class="panel__title">Add AI provider</h2></div>
+    <form method="post" action="/Ai/ProviderSave" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Name *</span><input name="Name" class="input" required placeholder="OpenAI Production" /></label>
+            <label class="field"><span>Provider type</span><select name="ProviderType" class="input">
+                @foreach (var t in Enum.GetValues<Crm.Data.Entities.AiProviderType>()) { <option value="@((int)t)">@t</option> }
+            </select></label>
+            <label class="field"><span>API key</span><input name="ApiKey" class="input" type="password" placeholder="sk-…" /></label>
+            <label class="field"><span>Model</span><input name="Model" class="input" placeholder="gpt-4o, claude-3-5-sonnet, gemini-1.5-pro…" /></label>
+            <label class="field"><span>Custom endpoint (optional)</span><input name="Endpoint" class="input" placeholder="https://…" /></label>
+            <label class="field"><span>Monthly token budget (0=∞)</span><input name="MonthlyTokenBudget" class="input" type="number" min="0" value="0" /></label>
+            <label class="field"><span>Temperature</span><input name="Temperature" class="input" type="number" step="0.1" min="0" max="2" value="0.7" /></label>
+            <label class="field"><span>Max tokens</span><input name="MaxTokens" class="input" type="number" min="100" max="32000" value="2000" /></label>
+        </div>
+        <label class="field field--inline"><input type="checkbox" name="IsDefault" value="true" /> <span>Default provider</span></label>
+        <label class="field field--inline"><input type="checkbox" name="IsEnabled" value="true" checked /> <span>Enabled</span></label>
+        <button class="btn btn--primary" type="submit">Save provider</button>
+    </form>
+</section>
+
+@section Scripts {
+<script>
+async function testProvider(id) {
+    const out = document.getElementById('testOut');
+    out.hidden = false; out.textContent = 'Testing…';
+    const res = await fetch('/Ai/TestProvider?id=' + id, { method: 'POST', headers: { 'RequestVerificationToken': document.querySelector('input[name=__RequestVerificationToken]').value } });
+    const d = await res.json();
+    out.textContent = d.ok ? 'Connection OK — model responded.' : 'Failed: ' + (d.Error || 'unknown');
+    out.className = 'notice ' + (d.ok ? 'notice--ok' : 'notice--warn');
+}
+</script>
+}

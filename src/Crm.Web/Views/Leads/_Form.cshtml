@@ -1,0 +1,44 @@
+@model Crm.Web.ViewModels.LeadFormVm
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit lead" : "New lead";
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">@ViewData["Title"]</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        @if (Model.Id.HasValue) { <input type="hidden" asp-for="Id" /> }
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+        <fieldset class="form-section">
+            <legend>Lead</legend>
+            <div class="form-grid">
+                <label class="field"><span>First name *</span><input asp-for="FirstName" class="input" required /></label>
+                <label class="field"><span>Last name *</span><input asp-for="LastName" class="input" required /></label>
+                <label class="field"><span>Email</span><input asp-for="Email" class="input" type="email" /></label>
+                <label class="field"><span>Phone</span><input asp-for="Phone" class="input" /></label>
+                <label class="field"><span>Company</span><input asp-for="CompanyName" class="input" /></label>
+                <label class="field"><span>Job title</span><input asp-for="JobTitle" class="input" /></label>
+                <label class="field"><span>Industry</span><input asp-for="Industry" class="input" /></label>
+                <label class="field"><span>Country</span><input asp-for="Country" class="input" /></label>
+                <label class="field"><span>Website</span><input asp-for="Website" class="input" type="url" /></label>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend>Acquisition</legend>
+            <div class="form-grid">
+                <label class="field"><span>Source</span><input asp-for="Source" class="input" placeholder="web, ads, referral, manual…" /></label>
+                <label class="field"><span>Campaign</span><input asp-for="Campaign" class="input" /></label>
+                <label class="field"><span>Status</span><select asp-for="Status" class="input">
+                    @foreach (var s in Enum.GetValues<Crm.Data.Entities.LeadStatus>()) { <option value="@s" selected="@(Model.Status == s)">@s</option> }
+                </select></label>
+                <label class="field"><span>Assigned to</span><select asp-for="AssignedToId" asp-items="ViewBag.Users" class="input"><option value="">— Unassigned —</option></select></label>
+            </div>
+        </fieldset>
+        <label class="field"><span>Notes</span><textarea asp-for="Notes" class="input" rows="3"></textarea></label>
+        <div class="btn-row">
+            <button type="submit" class="btn btn--primary">@(isEdit ? "Save changes" : "Create lead")</button>
+            <a class="btn" href="/Leads">Cancel</a>
+        </div>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

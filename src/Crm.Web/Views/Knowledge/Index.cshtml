@@ -1,0 +1,41 @@
+@model List<Crm.Data.Entities.KnowledgeDocument>
+@{ ViewData["Title"] = "AI Knowledge Base"; }
+<div class="page-grid">
+<section class="panel neu">
+    <div class="panel__head"><div><h2 class="panel__title">Knowledge documents</h2><p class="panel__sub">@Model.Count documents indexed for AI retrieval.</p></div></div>
+    <table class="app-table">
+        <thead><tr><th>Title</th><th>Source</th><th>Status</th><th>Size</th><th>Indexed</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var d in Model)
+        {
+            <tr>
+                <td><strong>@d.Title</strong></td><td>@d.SourceType</td>
+                <td><span class="chip chip--@(d.Status == "indexed" ? "qualified" : "unqualified")">@d.Status</span></td>
+                <td>@(d.SizeBytes > 0 ? $"{d.SizeBytes / 1024} KB" : "—")</td>
+                <td>@d.IndexedAt?.ToString("MM-dd HH:mm")</td>
+                <td><form method="post" action="/Knowledge/Delete/@d.Id" class="inline-form" onsubmit="return confirm('Delete document and its chunks?');">@Html.AntiForgeryToken()<button class="btn btn--sm btn--danger">✕</button></form></td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="6" class="empty-state">No documents. Upload company docs so AI assistants can answer from your data.</td></tr> }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Add knowledge</h2></div>
+    <form method="post" action="/Knowledge/Upload" enctype="multipart/form-data" class="form">
+        @Html.AntiForgeryToken()
+        <label class="field"><span>Title (optional)</span><input name="title" class="input" /></label>
+        <label class="field"><span>File</span><input type="file" name="file" class="input" accept=".txt,.md,.csv,.json,.html,.log" required /></label>
+        <button class="btn btn--primary" type="submit">Upload &amp; index</button>
+    </form>
+    <hr style="border:0;border-top:1px solid var(--inset);margin:18px 0" />
+    <form method="post" action="/Knowledge/AddText" class="form">
+        @Html.AntiForgeryToken()
+        <label class="field"><span>Note title</span><input name="title" class="input" /></label>
+        <label class="field"><span>Content</span><textarea name="content" class="input" rows="4" placeholder="Paste policies, FAQs, product info…"></textarea></label>
+        <button class="btn" type="submit">Add as knowledge</button>
+    </form>
+    <p class="field-hint">Supported: txt, md, csv, json, html, log (max 20 MB). Content is chunked and used by AI assistants for retrieval.</p>
+</section>
+</div>

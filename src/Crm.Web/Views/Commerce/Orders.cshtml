@@ -1,0 +1,31 @@
+@model List<Crm.Data.Entities.Order>
+@{ ViewData["Title"] = "Orders"; var status = ViewBag.Status as string; }
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Orders</h2><p class="panel__sub">@Model.Count orders</p></div>
+        <form method="post" action="/Commerce/OrderCreate" class="inline-form">@Html.AntiForgeryToken()
+            <button class="btn btn--primary" type="submit">+ New order</button></form>
+    </div>
+    <form method="get" class="filter-bar">
+        <select name="status" class="input input--sm"><option value="">All statuses</option>
+            @foreach (var s in Enum.GetValues<Crm.Data.Entities.OrderStatus>()) { <option value="@s" selected="@(status == s.ToString())">@s</option> }</select>
+        <button class="btn btn--sm">Filter</button>
+    </form>
+    <table class="app-table">
+        <thead><tr><th>Order #</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+        @foreach (var o in Model)
+        {
+            <tr>
+                <td><a href="/Commerce/OrderDetails/@o.Id">@o.OrderNumber</a></td>
+                <td>@(o.Contact != null ? $"{o.Contact.FirstName} {o.Contact.LastName}" : "—")</td>
+                <td>@o.Lines.Count</td>
+                <td>@o.Total.ToString("C2") @o.Currency</td>
+                <td><span class="chip">@o.Status</span></td>
+                <td>@o.OrderDate.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="6" class="empty-state">No orders yet.</td></tr> }
+        </tbody>
+    </table>
+</section>

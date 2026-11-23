@@ -1,0 +1,25 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+.vscode/
+
+# Secrets / keys / local config
+.keys/
+*.pfx
+secrets.json
+appsettings.*.Local.json
+.env
+
+# Node (if used)
+node_modules/
+
+# OS
+Thumbs.db
+Desktop.ini
+
+# Logs
+*.log
+logs/

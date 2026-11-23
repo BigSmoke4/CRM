@@ -1,0 +1,82 @@
+@model List<Crm.Data.Entities.Product>
+@{ ViewData["Title"] = "Products"; var q = ViewBag.Q as string; }
+<div class="page-grid">
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Products &amp; services</h2><p class="panel__sub">@Model.Count items</p></div>
+        <button class="btn btn--primary" onclick="document.getElementById('newProduct').hidden=false">+ New product</button>
+    </div>
+    <form method="get" class="filter-bar"><input name="q" value="@q" class="input input--sm" placeholder="Search…" /><button class="btn btn--sm">Search</button></form>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>SKU</th><th>Type</th><th>Price</th><th>Stock</th><th>Category</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td><strong>@p.Name</strong></td><td>@p.Sku</td><td>@p.Type</td>
+                <td>@p.Price.ToString("C2")</td>
+                <td>@(p.TrackStock ? p.StockQuantity.ToString() : "—")</td>
+                <td>@p.Category</td>
+                <td class="row-actions">
+                    <button class="btn btn--sm" onclick="editProduct('@p.Id','@p.Name.Replace("'","\\'")','@p.Sku','@p.Price','@p.StockQuantity','@p.Category','@p.Type')">Edit</button>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="7" class="empty-state">No products. Create your catalog to use in deals and orders.</td></tr> }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel neu" id="newProduct">
+    <div class="panel__head"><h2 class="panel__title">New product</h2></div>
+    <form method="post" action="/Commerce/ProductCreate" class="form">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Name *</span><input name="Name" class="input" required /></label>
+            <label class="field"><span>SKU</span><input name="Sku" class="input" /></label>
+            <label class="field"><span>Type</span><select name="Type" class="input"><option value="Product">Product</option><option value="Service">Service</option></select></label>
+            <label class="field"><span>Price</span><input name="Price" class="input" type="number" step="0.01" min="0" /></label>
+            <label class="field"><span>Cost</span><input name="Cost" class="input" type="number" step="0.01" min="0" /></label>
+            <label class="field"><span>Stock</span><input name="StockQuantity" class="input" type="number" min="0" /></label>
+            <label class="field"><span>Category</span><input name="Category" class="input" /></label>
+        </div>
+        <label class="field field--inline"><input type="checkbox" name="TrackStock" value="true" /> <span>Track stock</span></label>
+        <button class="btn btn--primary" type="submit">Create</button>
+    </form>
+</section>
+</div>
+
+<!-- Inline edit modal -->
+<div class="modal" id="editModal">
+    <div class="modal__box neu">
+        <h3>Edit product</h3>
+        <form method="post" id="editForm" class="form">
+            @Html.AntiForgeryToken()
+            <label class="field"><span>Name</span><input name="Name" id="epName" class="input" required /></label>
+            <div class="form-grid">
+                <label class="field"><span>SKU</span><input name="Sku" id="epSku" class="input" /></label>
+                <label class="field"><span>Price</span><input name="Price" id="epPrice" class="input" type="number" step="0.01" /></label>
+                <label class="field"><span>Stock</span><input name="StockQuantity" id="epStock" class="input" type="number" /></label>
+                <label class="field"><span>Category</span><input name="Category" id="epCat" class="input" /></label>
+            </div>
+            <div class="modal__actions">
+                <button class="btn btn--primary" type="submit">Save</button>
+                <button class="btn" type="button" onclick="document.getElementById('editModal').classList.remove('is-in')">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+function editProduct(id, name, sku, price, stock, cat, type) {
+    document.getElementById('editForm').action = '/Commerce/ProductUpdate/' + id;
+    document.getElementById('epName').value = name;
+    document.getElementById('epSku').value = sku || '';
+    document.getElementById('epPrice').value = price;
+    document.getElementById('epStock').value = stock;
+    document.getElementById('epCat').value = cat || '';
+    document.getElementById('editModal').classList.add('is-in');
+}
+</script>
+}

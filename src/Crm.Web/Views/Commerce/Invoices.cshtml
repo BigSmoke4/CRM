@@ -1,0 +1,32 @@
+@model List<Crm.Data.Entities.Invoice>
+@{ ViewData["Title"] = "Invoices"; var status = ViewBag.Status as string; }
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Invoices</h2><p class="panel__sub">@Model.Count invoices</p></div>
+        <a class="btn btn--primary" href="/Commerce/InvoiceCreate">+ New invoice</a>
+    </div>
+    <form method="get" class="filter-bar">
+        <select name="status" class="input input--sm"><option value="">All statuses</option>
+            @foreach (var s in Enum.GetValues<Crm.Data.Entities.InvoiceStatus>()) { <option value="@s" selected="@(status == s.ToString())">@s</option> }</select>
+        <button class="btn btn--sm">Filter</button>
+    </form>
+    <table class="app-table">
+        <thead><tr><th>Invoice #</th><th>Customer</th><th>Total</th><th>Paid</th><th>Status</th><th>Due</th></tr></thead>
+        <tbody>
+        @foreach (var i in Model)
+        {
+            <tr>
+                <td><strong>@i.InvoiceNumber</strong></td>
+                <td>@(i.Contact != null ? $"{i.Contact.FirstName} {i.Contact.LastName}" : "—")</td>
+                <td>@i.Total.ToString("C2") @i.Currency</td>
+                <td>@i.AmountPaid.ToString("C2")</td>
+                <td><span class="chip chip--@(i.Status == Crm.Data.Entities.InvoiceStatus.Paid ? "qualified" : i.Status == Crm.Data.Entities.InvoiceStatus.Overdue ? "unqualified" : "")">@i.Status</span>
+                @if (i.Status != Crm.Data.Entities.InvoiceStatus.Paid)
+                { <form method="post" action="/Payments/PayInvoice/@i.Id" class="inline-form">@Html.AntiForgeryToken()<button class="btn btn--sm" type="submit">Pay</button></form> }</td>
+                <td>@i.DueDate?.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="6" class="empty-state">No invoices.</td></tr> }
+        </tbody>
+    </table>
+</section>

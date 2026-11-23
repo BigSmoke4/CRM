@@ -1,0 +1,18 @@
+@model Crm.Data.Entities.Campaign
+@{ ViewData["Title"] = "New campaign"; }
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Create campaign</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Name *</span><input asp-for="Name" class="input" required /></label>
+            <label class="field"><span>Channel</span><select asp-for="Channel" class="input"><option value="email">Email</option><option value="sms">SMS</option></select></label>
+            <label class="field"><span>Subject</span><input asp-for="Subject" class="input" /></label>
+        </div>
+        <label class="field"><span>Description</span><input asp-for="Description" class="input" /></label>
+        <label class="field"><span>Body (HTML supported)</span><textarea asp-for="BodyHtml" class="input" rows="8" placeholder="<h2>Hello!</h2><p>Your message…</p>"></textarea></label>
+        <label class="field"><span>Audience filter (JSON, optional)</span><textarea asp-for="AudienceFilterJson" class="input" rows="2" placeholder='{"tags":"vip","customerType":"Customer"}'></textarea></label>
+        <div class="btn-row"><button class="btn btn--primary" type="submit">Create draft</button><a class="btn" href="/Campaigns">Cancel</a></div>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

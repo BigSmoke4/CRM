@@ -1,0 +1,21 @@
+/* ===== Soft-UI primitives shared by every module ===== */
+.neu          { background: var(--bg); box-shadow: var(--neu-raised); border-radius: var(--r-card); }
+.neu--sm      { box-shadow: var(--neu-small); }
+.neu--pressed { box-shadow: var(--neu-pressed); }
+.neu--pill    { border-radius: var(--r-pill); }
+.neu--round   { border-radius: 50%; }
+
+.btn { border: 0; cursor: pointer; padding: 11px 22px; font: 600 var(--fs-body)/1 var(--font); color: var(--ink-soft); background: var(--bg); transition: box-shadow .2s, transform .15s; }
+.btn:hover { color: var(--ink); }
+.btn:active { box-shadow: var(--neu-pressed); }
+.btn--primary { color: var(--green-text); }
+.btn--danger { color: var(--red-text); }
+
+/* round icon badge (icon is centred, never overlaps text) */
+.badge { width: 2rem; height: 2rem; border-radius: 50%; display: inline-grid; place-items: center; flex: none; color: #fff; background: var(--green); box-shadow: var(--neu-small); }
+.badge svg { width: 1rem; height: 1rem; fill: currentColor; }
+.badge--danger { background: var(--red); }
+
+/* progress track */
+.range { position: relative; width: 100%; height: .5rem; border-radius: .25rem; background: var(--bg); box-shadow: var(--neu-small); }
+.range .fill { position: absolute; inset: 0 auto 0 0; width: 0; border-radius: .25rem; background: var(--green); transition: width 800ms var(--ease); }

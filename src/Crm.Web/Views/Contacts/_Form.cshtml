@@ -1,0 +1,68 @@
+@model Crm.Web.ViewModels.ContactFormVm
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit contact" : "New contact";
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">@ViewData["Title"]</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        @if (Model.Id.HasValue) { <input type="hidden" asp-for="Id" /> }
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+        <fieldset class="form-section">
+            <legend>Identity</legend>
+            <div class="form-grid">
+                <label class="field"><span>First name *</span><input asp-for="FirstName" class="input" required /></label>
+                <label class="field"><span>Last name *</span><input asp-for="LastName" class="input" required /></label>
+                <label class="field"><span>Email</span><input asp-for="Email" class="input" type="email" /></label>
+                <label class="field"><span>Phone</span><input asp-for="Phone" class="input" /></label>
+                <label class="field"><span>Mobile</span><input asp-for="Mobile" class="input" /></label>
+                <label class="field"><span>Job title</span><input asp-for="JobTitle" class="input" /></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Company &amp; classification</legend>
+            <div class="form-grid">
+                <label class="field"><span>Account</span><select asp-for="AccountId" asp-items="ViewBag.Accounts" class="input"><option value="">— None —</option></select></label>
+                <label class="field"><span>Source</span><input asp-for="Source" class="input" placeholder="manual, web, referral…" /></label>
+                <label class="field"><span>Customer type</span><select asp-for="CustomerType" asp-items="ViewBag.CustomerTypes" class="input"></select></label>
+                <label class="field"><span>Lead status</span><select asp-for="LeadStatus" asp-items="ViewBag.LeadStatuses" class="input"></select></label>
+                <label class="field"><span>Lead score</span><input asp-for="LeadScore" class="input" type="number" min="0" max="100" /></label>
+                <label class="field"><span>Assigned to</span><select asp-for="AssignedToId" asp-items="ViewBag.Users" class="input"><option value="">— Unassigned —</option></select></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Address &amp; web</legend>
+            <div class="form-grid">
+                <label class="field"><span>Address</span><input asp-for="AddressLine1" class="input" /></label>
+                <label class="field"><span>City</span><input asp-for="City" class="input" /></label>
+                <label class="field"><span>State / Region</span><input asp-for="State" class="input" /></label>
+                <label class="field"><span>Postal code</span><input asp-for="PostalCode" class="input" /></label>
+                <label class="field"><span>Country</span><input asp-for="Country" class="input" /></label>
+                <label class="field"><span>Website</span><input asp-for="Website" class="input" type="url" placeholder="https://" /></label>
+                <label class="field"><span>LinkedIn</span><input asp-for="LinkedInUrl" class="input" type="url" /></label>
+                <label class="field"><span>Facebook</span><input asp-for="FacebookUrl" class="input" type="url" /></label>
+                <label class="field"><span>WhatsApp</span><input asp-for="WhatsAppNumber" class="input" /></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Notes &amp; preferences</legend>
+            <label class="field"><span>Tags (comma separated)</span><input asp-for="Tags" class="input" placeholder="vip, enterprise, west-region" /></label>
+            <label class="field"><span>Notes</span><textarea asp-for="Notes" class="input" rows="3"></textarea></label>
+            <div class="form-grid">
+                <label class="field field--inline"><input asp-for="EmailOptIn" type="checkbox" /> <span>Email opt-in</span></label>
+                <label class="field field--inline"><input asp-for="SmsOptIn" type="checkbox" /> <span>SMS opt-in</span></label>
+            </div>
+        </fieldset>
+
+        <div class="btn-row">
+            <button type="submit" class="btn btn--primary">@(isEdit ? "Save changes" : "Create contact")</button>
+            <a class="btn" href="@(isEdit ? $"/Contacts/Details/{Model.Id}" : "/Contacts")">Cancel</a>
+        </div>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

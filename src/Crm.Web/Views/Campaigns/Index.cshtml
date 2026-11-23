@@ -1,0 +1,24 @@
+@model List<Crm.Data.Entities.Campaign>
+@{ ViewData["Title"] = "Campaigns"; }
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Campaigns</h2><p class="panel__sub">@Model.Count campaigns</p></div>
+        <a class="btn btn--primary" href="/Campaigns/Create">+ New campaign</a>
+    </div>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>Channel</th><th>Status</th><th>Recipients</th><th>Sent</th><th>Scheduled</th></tr></thead>
+        <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td><a href="/Campaigns/Details/@c.Id"><strong>@c.Name</strong></a></td>
+                <td>@c.Channel</td>
+                <td><span class="chip chip--@(c.Status == Crm.Data.Entities.CampaignStatus.Completed ? "qualified" : c.Status == Crm.Data.Entities.CampaignStatus.Running ? "new" : "")">@c.Status</span></td>
+                <td>@c.RecipientsCount</td><td>@c.SentCount</td>
+                <td>@c.ScheduledAt?.ToString("yyyy-MM-dd HH:mm")</td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="6" class="empty-state">No campaigns yet.</td></tr> }
+        </tbody>
+    </table>
+</section>

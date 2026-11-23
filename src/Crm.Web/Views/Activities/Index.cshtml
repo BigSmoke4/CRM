@@ -1,0 +1,54 @@
+@model List<Crm.Web.Controllers.ActivitiesController.ActivityListItem>
+@{
+    ViewData["Title"] = "Activities";
+    var type = ViewBag.Type as string; var q = ViewBag.Q as string; var overdue = ViewBag.Overdue as bool?;
+    int page = ViewBag.Page; int totalPages = ViewBag.TotalPages; int total = ViewBag.Total;
+    var types = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Types;
+}
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Activities</h2><p class="panel__sub">@total items</p></div>
+        <a class="btn btn--primary" href="/Activities/Create">+ New activity</a>
+    </div>
+    <form method="get" class="filter-bar">
+        <input name="q" value="@q" class="input input--sm" placeholder="Search…" />
+        <select name="type" class="input input--sm">
+            <option value="">All types</option>
+            @foreach (var t in types) { <option value="@t.Value" selected="@(type == t.Value)">@t.Text</option> }
+        </select>
+        <label class="field field--inline field--sm"><input type="checkbox" name="overdue" value="true" checked="@(overdue == true)" /> <span>Overdue only</span></label>
+        <button class="btn btn--sm" type="submit">Filter</button>
+    </form>
+    <table class="app-table">
+        <thead><tr><th>Type</th><th>Subject</th><th>Contact</th><th>Owner</th><th>Due</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var a in Model)
+        {
+            <tr class="@(a.DueAt < DateTimeOffset.UtcNow && !a.IsCompleted && a.Type == Crm.Data.Entities.ActivityType.Task ? "row--overdue" : "")">
+                <td><span class="chip">@a.Type</span></td>
+                <td>@a.Subject</td>
+                <td>@a.ContactName</td>
+                <td>@a.Owner</td>
+                <td>@a.DueAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@(a.IsCompleted ? "Done" : "Open")</td>
+                <td class="row-actions">
+                    <form method="post" action="/Activities/Complete/@a.Id" class="inline-form">@Html.AntiForgeryToken()
+                        <button class="btn btn--sm" type="submit">@(a.IsCompleted ? "Reopen" : "Done")</button></form>
+                    <form method="post" action="/Activities/Delete/@a.Id" class="inline-form" onsubmit="return confirm('Delete?');">@Html.AntiForgeryToken()
+                        <button class="btn btn--sm btn--danger" type="submit">✕</button></form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="7" class="empty-state">No activities.</td></tr> }
+        </tbody>
+    </table>
+    @if (totalPages > 1)
+    {
+        <nav class="pager">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <a class="pager__item @(i == page ? "is-active" : "")" href="/Activities?page=@i&type=@type&q=@q&overdue=@overdue">@i</a>
+            }
+        </nav>
+    }
+</section>

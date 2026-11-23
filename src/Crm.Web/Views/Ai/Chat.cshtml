@@ -1,0 +1,43 @@
+@model Crm.Data.Entities.AiConversation
+@{
+    ViewData["Title"] = "AI Chat";
+    var assistant = (Crm.Data.Entities.AiAssistant)ViewBag.Assistant;
+    var assistants = (List<Crm.Data.Entities.AiAssistant>)ViewBag.Assistants;
+    var conversations = (List<Crm.Data.Entities.AiConversation>)ViewBag.Conversations;
+    var messages = (List<Crm.Data.Entities.AiMessage>)ViewBag.Messages;
+}
+<div class="chat-layout">
+    <aside class="panel neu chat-side">
+        <div class="panel__head"><h2 class="panel__title">Conversations</h2></div>
+        <ul class="note-list">
+            @foreach (var c in conversations)
+            {
+                <li class="@(c.Id == Model.Id ? "is-active" : "")"><a href="/Ai/Chat?conversationId=@c.Id">@c.Title</a></li>
+            }
+        </ul>
+        <h3 class="subhead">Assistants</h3>
+        @foreach (var a in assistants)
+        {
+            <a class="btn btn--sm" href="/Ai/Chat?assistantId=@a.Id" style="margin:2px">@a.Name</a>
+        }
+    </aside>
+    <section class="panel neu chat-main">
+        <div class="panel__head"><h2 class="panel__title">@assistant.Name</h2><p class="panel__sub">@(assistant.Provider != null ? $"{assistant.Provider.Name} · {assistant.Provider.Model}" : "")</p></div>
+        <div class="chat-messages">
+            @foreach (var m in messages)
+            {
+                <div class="chat-msg chat-msg--@m.Role">
+                    <div class="chat-msg__bubble">@m.Content</div>
+                </div>
+            }
+            @if (!messages.Any()) { <p class="panel__sub">Ask @assistant.Name anything about your CRM data.</p> }
+        </div>
+        <form method="post" action="/Ai/ChatSend" class="chat-input">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="conversationId" value="@Model.Id" />
+            <input name="message" class="input" placeholder="Type a message…" required autocomplete="off" />
+            <button class="btn btn--primary" type="submit">Send</button>
+        </form>
+    </section>
+</div>
+

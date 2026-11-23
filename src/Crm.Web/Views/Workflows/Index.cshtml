@@ -1,0 +1,23 @@
+@model List<Crm.Data.Entities.WorkflowDefinition>
+@{ ViewData["Title"] = "Workflows"; }
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Automation workflows</h2><p class="panel__sub">@Model.Count workflows</p></div>
+        <a class="btn btn--primary" href="/Workflows/Create">+ New workflow</a>
+    </div>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>Trigger</th><th>Entity</th><th>Status</th><th>Updated</th></tr></thead>
+        <tbody>
+        @foreach (var w in Model)
+        {
+            <tr>
+                <td><a href="/Workflows/Edit/@w.Id"><strong>@w.Name</strong></a></td>
+                <td>@w.TriggerType</td><td>@w.TriggerEntity</td>
+                <td><span class="chip chip--@(w.IsActive ? "qualified" : "")">@(w.IsActive ? "Active" : "Paused")</span></td>
+                <td>@w.UpdatedAt.ToString("yyyy-MM-dd")</td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="5" class="empty-state">No workflows. Create rules like "new lead → assign + task".</td></tr> }
+        </tbody>
+    </table>
+</section>

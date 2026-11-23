@@ -1,0 +1,100 @@
+﻿@model Crm.Web.Controllers.DashboardVm
+@{
+    ViewData["Title"] = "Dashboard";
+    string Money(decimal v) => v.ToString("C0");
+}
+
+<div class="kpi-grid">
+    <div class="panel neu kpi"><span class="kpi__label">Contacts</span><span class="kpi__value">@Model.TotalContacts</span><span class="kpi__sub">+@Model.NewContactsThisMonth new this month</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Accounts</span><span class="kpi__value">@Model.TotalAccounts</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Open leads</span><span class="kpi__value">@Model.OpenLeads</span><span class="kpi__sub">@Model.QualifiedLeads qualified</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Open deals</span><span class="kpi__value">@Model.OpenDeals</span><span class="kpi__sub">@Money(Model.PipelineValue) pipeline</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Weighted forecast</span><span class="kpi__value">@Money(Model.WeightedForecast)</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Won (30d)</span><span class="kpi__value kpi__value--good">@Model.WonDealsThisMonth</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Open tickets</span><span class="kpi__value">@Model.OpenTickets</span></div>
+    <div class="panel neu kpi"><span class="kpi__label">Tasks due</span><span class="kpi__value @(Model.OverdueTasks > 0 ? "kpi__value--bad" : "")">@Model.DueTasksToday</span><span class="kpi__sub">@Model.OverdueTasks overdue</span></div>
+</div>
+
+<div class="dash-grid">
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Pipeline by stage</h2></div>
+        @if (Model.DealsByStage.Any())
+        {
+            <table class="app-table">
+                <thead><tr><th>Stage</th><th>Deals</th><th>Value</th></tr></thead>
+                <tbody>
+                @foreach (var s in Model.DealsByStage)
+                {
+                    <tr><td>@s.Name</td><td>@s.Count</td><td>@Money(s.Value)</td></tr>
+                }
+                </tbody>
+            </table>
+        }
+        else { <p class="panel__sub">No open deals yet. <a href="/Deals/Create">Create your first deal</a>.</p> }
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Leads by status</h2></div>
+        @if (Model.LeadsByStatus.Any())
+        {
+            <table class="app-table">
+                <thead><tr><th>Status</th><th>Count</th></tr></thead>
+                <tbody>
+                @foreach (var s in Model.LeadsByStatus)
+                {
+                    <tr><td>@s.Name</td><td>@s.Count</td></tr>
+                }
+                </tbody>
+            </table>
+        }
+        else { <p class="panel__sub">No leads yet.</p> }
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Contacts by source</h2></div>
+        @if (Model.ContactsBySource.Any())
+        {
+            <table class="app-table">
+                <thead><tr><th>Source</th><th>Contacts</th></tr></thead>
+                <tbody>
+                @foreach (var s in Model.ContactsBySource)
+                {
+                    <tr><td>@s.Name</td><td>@s.Count</td></tr>
+                }
+                </tbody>
+            </table>
+        }
+        else { <p class="panel__sub">No contact sources recorded.</p> }
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Recent activity</h2></div>
+        @if (Model.RecentActivities.Any())
+        {
+            <ul class="activity-feed">
+                @foreach (var a in Model.RecentActivities)
+                {
+                    <li class="activity-feed__item">
+                        <span class="badge badge--@BadgeTone(a.Type)">@a.Type</span>
+                        <div>
+                            <strong>@a.Subject</strong>
+                            <small>@a.CreatedAt.ToString("MMM d, HH:mm") @(a.OwnerId != null ? "· " + a.OwnerId : "")</small>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+        else { <p class="panel__sub">No activity yet.</p> }
+    </section>
+</div>
+
+@functions {
+    static string BadgeTone(Crm.Data.Entities.ActivityType t) => t switch
+    {
+        Crm.Data.Entities.ActivityType.Call => "info",
+        Crm.Data.Entities.ActivityType.Email => "info",
+        Crm.Data.Entities.ActivityType.Deal => "good",
+        Crm.Data.Entities.ActivityType.Ticket => "warn",
+        _ => ""
+    };
+}

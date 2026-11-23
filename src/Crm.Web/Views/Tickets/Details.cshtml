@@ -1,0 +1,62 @@
+@model Crm.Data.Entities.Ticket
+@{
+    ViewData["Title"] = Model.TicketNumber;
+    var replyVm = (Crm.Web.ViewModels.TicketReplyVm)ViewBag.ReplyVm;
+    var users = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Users;
+}
+<div class="detail-grid">
+    <div class="detail-main">
+        <section class="panel neu">
+            <div class="panel__head">
+                <div><h2 class="panel__title">@Model.Subject</h2><p class="panel__sub">@Model.TicketNumber · @Model.Status · @Model.Priority</p></div>
+                <div class="btn-row">
+                    <form method="post" action="/Tickets/UpdateStatus/@Model.Id" class="inline-form">@Html.AntiForgeryToken()
+                        <input type="hidden" name="status" value="@Crm.Data.Entities.TicketStatus.Resolved" />
+                        <button class="btn btn--sm" type="submit">Resolve</button></form>
+                    <form method="post" action="/Tickets/UpdateStatus/@Model.Id" class="inline-form">@Html.AntiForgeryToken()
+                        <input type="hidden" name="status" value="@Crm.Data.Entities.TicketStatus.Closed" />
+                        <button class="btn btn--sm" type="submit">Close</button></form>
+                </div>
+            </div>
+            <p style="white-space:pre-wrap">@Model.Description</p>
+            <dl class="detail-list">
+                <div><dt>Contact</dt><dd>@(Model.Contact != null ? $"{Model.Contact.FirstName} {Model.Contact.LastName}" : "—")</dd></div>
+                <div><dt>Category</dt><dd>@Model.Category</dd></div>
+                <div><dt>SLA due</dt><dd>@Model.SlaDueAt?.ToString("yyyy-MM-dd HH:mm") @(Model.SlaBreached ? "(breached)" : "")</dd></div>
+                <div><dt>First response</dt><dd>@Model.FirstResponseAt?.ToString("yyyy-MM-dd HH:mm")</dd></div>
+                <div><dt>CSAT</dt><dd>@Model.SatisfactionScore/5</dd></div>
+            </dl>
+        </section>
+
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Conversation (@Model.Replies.Count)</h2></div>
+            <ul class="note-list">
+                @foreach (var r in Model.Replies.OrderBy(x => x.CreatedAt))
+                {
+                    <li class="@(r.IsInternalNote ? "note--internal" : "")">
+                        <p>@r.Body</p>
+                        <small>@(r.IsInternalNote ? "Internal note" : "Reply") · @r.CreatedAt.ToString("MMM d, HH:mm")</small>
+                    </li>
+                }
+            </ul>
+            <form method="post" action="/Tickets/Reply" class="form" style="margin-top:16px">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="TicketId" value="@Model.Id" />
+                <label class="field"><span>Your reply</span><textarea name="Body" class="input" rows="3" required></textarea></label>
+                <label class="field field--inline"><input name="IsInternalNote" type="checkbox" /> <span>Internal note (not visible to customer)</span></label>
+                <button class="btn btn--primary" type="submit">Post</button>
+            </form>
+        </section>
+    </div>
+    <aside class="detail-side">
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Assign</h2></div>
+            <form method="post" action="/Tickets/Assign/@Model.Id" class="form">
+                @Html.AntiForgeryToken()
+                <select name="assigneeId" class="input" asp-items="users"><option value="">— Unassigned —</option></select>
+                <button class="btn btn--sm" type="submit">Assign</button>
+            </form>
+        </section>
+    </aside>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

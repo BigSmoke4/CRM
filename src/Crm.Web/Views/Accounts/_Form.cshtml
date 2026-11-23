@@ -1,0 +1,46 @@
+@model Crm.Web.ViewModels.AccountFormVm
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? "Edit account" : "New account";
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">@ViewData["Title"]</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        @if (Model.Id.HasValue) { <input type="hidden" asp-for="Id" /> }
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+        <fieldset class="form-section">
+            <legend>Company</legend>
+            <div class="form-grid">
+                <label class="field"><span>Name *</span><input asp-for="Name" class="input" required /></label>
+                <label class="field"><span>Industry</span><input asp-for="Industry" class="input" /></label>
+                <label class="field"><span>Website</span><input asp-for="Website" class="input" type="url" placeholder="https://" /></label>
+                <label class="field"><span>Company size</span><input asp-for="CompanySize" class="input" placeholder="11-50" /></label>
+                <label class="field"><span>Annual revenue</span><input asp-for="AnnualRevenue" class="input" type="number" step="0.01" min="0" /></label>
+                <label class="field"><span>Phone</span><input asp-for="Phone" class="input" /></label>
+                <label class="field"><span>Email</span><input asp-for="Email" class="input" type="email" /></label>
+                <label class="field"><span>Account manager</span><select asp-for="AssignedToId" asp-items="ViewBag.Users" class="input"><option value="">— Unassigned —</option></select></label>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend>Address</legend>
+            <div class="form-grid">
+                <label class="field"><span>Address</span><input asp-for="AddressLine1" class="input" /></label>
+                <label class="field"><span>City</span><input asp-for="City" class="input" /></label>
+                <label class="field"><span>State / Region</span><input asp-for="State" class="input" /></label>
+                <label class="field"><span>Postal code</span><input asp-for="PostalCode" class="input" /></label>
+                <label class="field"><span>Country</span><input asp-for="Country" class="input" /></label>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend>Notes</legend>
+            <label class="field"><span>Tags</span><input asp-for="Tags" class="input" /></label>
+            <label class="field"><span>Notes</span><textarea asp-for="Notes" class="input" rows="3"></textarea></label>
+        </fieldset>
+        <div class="btn-row">
+            <button type="submit" class="btn btn--primary">@(isEdit ? "Save changes" : "Create account")</button>
+            <a class="btn" href="@(isEdit ? $"/Accounts/Details/{Model.Id}" : "/Accounts")">Cancel</a>
+        </div>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

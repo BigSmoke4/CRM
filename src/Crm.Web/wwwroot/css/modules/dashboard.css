@@ -1,0 +1,158 @@
+/* ===== Dashboard module (branch selector, stats, donut, bars, top products) ===== */
+.stats { display: grid; gap: clamp(18px, 2.5vw, var(--gap)); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* Grid blocks are independent and align to their own natural content height (align-items: start) */
+.dash-grid { 
+  display: grid; 
+  gap: clamp(18px, 2.5vw, var(--gap)); 
+  grid-template-columns: minmax(320px, 4fr) minmax(0, 5fr) minmax(320px, 3.5fr); 
+  align-items: start; 
+}
+.dash-grid > * { min-width: 0; }
+
+/* ---------- stat card (from spec) ---------- */
+.stat-card { padding: 1rem; }
+.stat-card .title { display: flex; align-items: center; }
+.stat-card .title-text { margin: 0 0 0 .5rem; color: var(--ink-soft); font-size: 18px; }
+.stat-card .percent { margin: 0 0 0 .5rem; color: var(--green-text); font-weight: 600; display: flex; align-items: center; }
+.stat-card .percent.is-down { color: var(--red-text); }
+.stat-card .percent.is-down svg { transform: rotate(180deg); }
+.stat-card .data { display: flex; flex-direction: column; }
+.stat-card .data p { margin: 1rem 0; color: var(--ink); font-size: 2.25rem; line-height: 2.5rem; font-weight: 700; text-align: left; font-variant-numeric: tabular-nums; }
+
+/* ---------- writable pill dropdown ---------- */
+.select { position: relative; z-index: 20; width: 33.33%; min-width: 280px; }
+.select__control { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 14px 6px 20px; transition: box-shadow .2s; }
+.select.is-open .select__control { box-shadow: var(--neu-pressed); }
+.select__dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.select__input { flex: 1; min-width: 0; border: none; background: transparent; padding: 8px 0; font: 600 var(--fs-body)/1 var(--font); color: var(--ink-soft); outline: none; cursor: pointer; }
+.select.is-open .select__input { cursor: text; }
+.select__chev-btn { border: none; background: transparent; padding: 6px; cursor: pointer; display: grid; place-items: center; color: var(--ink-faint); outline: none; }
+.select__chev { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--dur) var(--ease); }
+.select.is-open .select__chev { transform: rotate(180deg); }
+
+.select__menu { position: absolute; top: calc(100% + 14px); left: 0; min-width: 100%; margin: 0; padding: 10px; list-style: none; border-radius: 24px; transform-origin: top left; animation: pop var(--dur) var(--ease); display: grid; gap: 6px; max-height: 260px; overflow-y: auto; z-index: 30; }
+.select__menu[hidden] { display: none; }
+.select__item { padding: 11px 14px; border-radius: 16px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 500; color: var(--ink-soft); transition: box-shadow .2s; }
+.select__item:hover, .select__item:focus-visible { box-shadow: var(--neu-small); }
+.select__item[aria-selected="true"] { box-shadow: var(--neu-pressed); color: var(--green-text); font-weight: 600; }
+.select__empty { padding: 14px; text-align: center; color: var(--ink-faint); font-size: var(--fs-small); font-weight: 500; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+/* ---------- donut ---------- */
+.donut-wrap { display: grid; gap: 24px; justify-items: center; width: 100%; }
+.donut { position: relative; width: min(100%, 280px); aspect-ratio: 1; border-radius: 50%; background: linear-gradient(145deg, #e8ebf0, #c4c8cc); box-shadow: 12px 12px 24px rgba(120,130,140,0.6), -12px -12px 24px rgba(255,255,255,0.95), inset 3px 3px 6px rgba(255,255,255,0.4), inset -3px -3px 6px rgba(150,160,170,0.2); padding: 15px; }
+.donut svg { width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.donut__seg { fill: none; stroke-linecap: round; cursor: pointer; transition: stroke-width .25s var(--ease), opacity .25s; outline: none; }
+.donut__seg:focus-visible { outline: none; }
+.donut__seg:hover, .donut__seg.is-active { stroke-width: 28; }
+.donut.has-active .donut__seg:not(.is-active) { opacity: .35; }
+.donut__center { position: absolute; inset: 20%; border-radius: 50%; display: grid; place-content: center; text-align: center; cursor: pointer; background: linear-gradient(145deg, #f5f7fa, #d8dce2); box-shadow: inset 8px 8px 16px rgba(140,150,160,0.5), inset -8px -8px 16px rgba(255,255,255,0.9), 0 0 30px rgba(150,160,170,0.15); border: 1px solid rgba(255,255,255,0.5); }
+.donut__center:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+.donut__center b { font-size: 1.25rem; color: var(--ink); text-shadow: 2px 2px 4px rgba(255,255,255,0.9), -1px -1px 2px rgba(150,160,170,0.3); font-variant-numeric: tabular-nums; }
+.donut__center small { color: var(--ink-faint); font-size: var(--fs-small); text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
+
+/* ---------- branch legend & accordion under round graph ---------- */
+.legend { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; gap: 8px; }
+.legend__item { border-radius: 14px; background: var(--bg); box-shadow: var(--neu-raised); transition: box-shadow .2s, transform .15s; overflow: hidden; }
+.legend__item:hover { box-shadow: var(--neu-small); transform: translateY(-1px); }
+.legend__item.is-active { box-shadow: var(--neu-pressed); }
+
+.legend__header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; cursor: pointer; color: var(--ink-soft); transition: background .15s; }
+.legend__header:hover { background: rgba(255,255,255,0.35); }
+.legend__branch-info { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; }
+.legend__dot { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 4px rgba(0,0,0,0.2); }
+.legend__name { font-weight: 500; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.legend__item.is-active .legend__name { color: var(--green-text); font-weight: 700; }
+
+.legend__metrics { display: flex; align-items: center; gap: 8px; flex: none; }
+.legend__val { font-variant-numeric: tabular-nums; color: var(--ink-soft); font-size: 0.82rem; font-weight: 600; }
+.legend__chev-btn { border: none; background: transparent; padding: 4px; cursor: pointer; display: grid; place-items: center; color: var(--ink-faint); outline: none; border-radius: 6px; }
+.legend__chev { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--dur) var(--ease); }
+.legend__item.is-expanded .legend__chev { transform: rotate(180deg); stroke: var(--green); }
+.legend__item.is-expanded { box-shadow: var(--neu-pressed); }
+
+/* In-legend branch products table drawer (Matching Billing page table header style) */
+.legend__drawer { padding: 10px 8px 12px; border-top: 1px solid rgba(160,170,182,0.22); animation: pop var(--dur) var(--ease); background: rgba(0,0,0,0.015); }
+.legend__drawer[hidden] { display: none; }
+.legend__drawer-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); padding: 0 4px 8px; }
+.legend__drawer .branch-products-scroll { max-height: 220px; overflow-y: auto; padding-right: 4px; }
+.legend__drawer .branch-products-scroll::-webkit-scrollbar { width: 4px; }
+.legend__drawer .branch-products-scroll::-webkit-scrollbar-thumb { background: rgba(153,161,175,0.4); border-radius: 4px; }
+
+/* Legend Table Header & Cells styled centrally via components.css */
+.legend__table { font-size: 0.82rem; }
+.legend__table th {
+  padding: 10px 8px;
+  font-size: 0.72rem;
+}
+.legend__table th:first-child { border-radius: 10px 0 0 10px; }
+.legend__table th:last-child { border-radius: 0 10px 10px 0; text-align: left; }
+.legend__table td {
+  padding: 8px;
+  font-size: 0.82rem;
+  text-align: left;
+}
+.legend__table .qty { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--ink); white-space: nowrap; text-align: left; }
+.legend__table .amount { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--green-text); text-align: left; white-space: nowrap; }
+
+/* ---------- bar chart ---------- */
+.bars svg { width: 100%; height: auto; display: block; overflow: visible; }
+.bars .grid-line { stroke: var(--inset); stroke-dasharray: 3 5; }
+.bars .axis-text { fill: var(--ink-faint); font: 500 11px var(--font); }
+.bars .bar { cursor: pointer; filter: drop-shadow(2px 2px 3px rgba(153,161,175,.8)) drop-shadow(-2px -2px 3px #fff); transition: filter .2s, height 700ms var(--ease), y 700ms var(--ease); }
+.bars .bar:hover { filter: drop-shadow(3px 3px 6px rgba(153,161,175,.9)) drop-shadow(-3px -3px 6px #fff); }
+
+.tooltip { position: fixed; z-index: 80; padding: 8px 14px; font-weight: 600; font-size: var(--fs-small); color: var(--ink-soft); pointer-events: none; transform: translate(-50%, calc(-100% - 12px)); white-space: nowrap; }
+.tooltip[hidden] { display: none; }
+
+/* ---------- right-side top products table (Centralized Table styling from components.css) ---------- */
+.table-container { overflow-x: auto; }
+.table thead tr { 
+  background: var(--bg);
+}
+.table tbody tr { 
+  transition: background 0.15s ease;
+}
+.table tbody tr:hover {
+  background: rgba(16, 185, 129, 0.04);
+}
+.table td:first-child { 
+  padding-left: 14px; 
+  font-weight: 600; 
+  color: var(--ink);
+  white-space: normal; /* product names may wrap */
+}
+.table td:last-child { 
+  padding-right: 14px; 
+  text-align: left; 
+}
+.table .qty { 
+  font-variant-numeric: tabular-nums; 
+  font-weight: 600; 
+  color: var(--ink-soft);
+  white-space: nowrap;
+  text-align: left;
+}
+.table .amount { 
+  font-variant-numeric: tabular-nums; 
+  font-weight: 700; 
+  color: var(--green-text); 
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table td.table__state { 
+  text-align: left; 
+  padding: 24px 14px; 
+  color: var(--ink-faint); 
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1400px) {
+  .dash-grid { grid-template-columns: minmax(300px, 5fr) minmax(0, 7fr); }
+  .dash-grid article:nth-child(3) { grid-column: 1 / -1; }
+}
+@media (max-width: 960px) { .dash-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .select { width: 100%; min-width: 0; } }
+@media (max-width: 380px) { .stats { grid-template-columns: 1fr; } .stat-card .data p { font-size: 1.9rem; } }

@@ -1,0 +1,68 @@
+@{
+    ViewData["Title"] = "AI Assistants";
+    var assistants = (List<Crm.Data.Entities.AiAssistant>)ViewBag.Assistants;
+    var conversations = (List<Crm.Data.Entities.AiConversation>)ViewBag.Conversations;
+}
+<div class="page-grid">
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Assistants</h2>    @if (User.HasClaim("permission", Crm.Data.Permissions.AiManage) || User.IsInRole("SuperAdmin"))
+    {
+        var providers = (List<Crm.Data.Entities.AiProviderConfig>)ViewBag.Providers;
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Manage assistants</h2><p class="panel__sub">Create scoped AI assistants with their own instructions and provider.</p></div>
+            <table class="app-table">
+                <thead><tr><th>Name</th><th>Description</th><th>Provider</th><th>Enabled</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var a in assistants)
+                {
+                    <tr>
+                        <td><strong>@a.Name</strong></td><td>@a.Description</td>
+                        <td>@(a.Provider?.Name)</td><td>@(a.IsEnabled ? "Yes" : "No")</td>
+                        <td><form method="post" action="/Ai/AssistantDelete/@a.Id" class="inline-form" onsubmit="return confirm('Delete assistant?');">@Html.AntiForgeryToken()<button class="btn btn--sm btn--danger">✕</button></form></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <form method="post" action="/Ai/AssistantSave" class="form" style="margin-top:14px">
+                @Html.AntiForgeryToken()
+                <div class="form-grid">
+                    <label class="field"><span>Name *</span><input name="Name" class="input" required /></label>
+                    <label class="field"><span>Description</span><input name="Description" class="input" /></label>
+                    <label class="field"><span>Provider</span><select name="ProviderId" class="input"><option value="">— default —</option>@foreach (var pr in providers) { <option value="@pr.Id">@pr.Name (@pr.Model)</option> }</select></label>
+                    <label class="field"><span>Instructions</span><input name="Instructions" class="input" placeholder="You are a sales assistant…" /></label>
+                </div>
+                <label class="field field--inline"><input type="checkbox" name="IsEnabled" value="true" checked /> <span>Enabled</span></label>
+                <button class="btn btn--primary" type="submit">Create assistant</button>
+            </form>
+        </section>
+    }
+</div>
+        @if (assistants.Any())
+        {
+            <ul class="note-list">
+                @foreach (var a in assistants)
+                {
+                    <li>
+                        <p><strong>@a.Name</strong> — @a.Description</p>
+                        <small>@(a.Provider != null ? $"{a.Provider.Name} / {a.Provider.Model}" : "no provider")</small>
+                        <a class="btn btn--sm" href="/Ai/Chat?assistantId=@a.Id">Open chat</a>
+                    </li>
+                }
+            </ul>
+        }
+        else { <p class="panel__sub">No assistants configured. Create one under AI settings to enable chat.</p> }
+    </section>
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Recent conversations</h2></div>
+        @if (conversations.Any())
+        {
+            <ul class="note-list">
+                @foreach (var c in conversations)
+                {
+                    <li><a href="/Ai/Chat?conversationId=@c.Id">@c.Title</a><small>@c.UpdatedAt.ToString("MMM d, HH:mm")</small></li>
+                }
+            </ul>
+        }
+        else { <p class="panel__sub">No conversations yet.</p> }
+    </section>
+</div>

@@ -1,0 +1,17 @@
+@model Crm.Web.Controllers.PaymentSettingsVm
+@{ ViewData["Title"] = "Payment settings"; var cfg = (Crm.Data.Entities.PaymentProviderConfig?)ViewBag.Config; }
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Stripe payments</h2><p class="panel__sub">Accept real card payments on invoices via Stripe Checkout.</p></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Publishable key</span><input name="PublishableKey" class="input" value="@(cfg?.PublishableKey ?? "")" placeholder="pk_live_…" /></label>
+            <label class="field"><span>Secret key</span><input name="SecretKey" class="input" type="password" placeholder="@(cfg?.SecretKeyEncrypted != null ? "•••••••• (unchanged)" : "sk_live_…")" /></label>
+            <label class="field"><span>Webhook signing secret</span><input name="WebhookSecret" class="input" type="password" placeholder="@(cfg?.WebhookSecretEncrypted != null ? "•••••••• (unchanged)" : "whsec_…")" /></label>
+        </div>
+        <p class="field-hint">Webhook URL for Stripe dashboard: <code>/Payments/Webhook</code> — event: <code>checkout.session.completed</code>. Get keys from Stripe Dashboard → Developers.</p>
+        <label class="field field--inline"><input type="checkbox" name="IsEnabled" value="true" @(Model.IsEnabled || (cfg?.IsEnabled ?? false) ? "checked" : "") /> <span>Enabled</span></label>
+        <button class="btn btn--primary" type="submit">Save</button>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

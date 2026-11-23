@@ -1,0 +1,55 @@
+@model Crm.Web.ViewModels.SetupVm
+@{
+    ViewData["Title"] = "Setup";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Setup - Enterprise CRM</title>
+    <link rel="stylesheet" href="~/css/core/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/neumorphic.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+<div class="auth-card neu auth-card--wide">
+    <div class="auth-card__brand">Enterprise<span>CRM</span></div>
+    <h1>Welcome — let's set up your workspace</h1>
+    <p class="auth-card__sub">Create your organization and administrator account. You can invite your team afterwards.</p>
+
+    <form asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+        <fieldset class="form-section">
+            <legend>Organization</legend>
+            <label class="field">
+                <span>Organization name</span>
+                <input asp-for="OrganizationName" class="input" required />
+                <span asp-validation-for="OrganizationName" class="field-error"></span>
+            </label>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Administrator account</legend>
+            <div class="form-grid">
+                <label class="field"><span>First name</span><input asp-for="AdminFirstName" class="input" required /></label>
+                <label class="field"><span>Last name</span><input asp-for="AdminLastName" class="input" required /></label>
+            </div>
+            <label class="field"><span>Email</span><input asp-for="AdminEmail" class="input" type="email" required /></label>
+            <label class="field"><span>Password</span><input asp-for="AdminPassword" class="input" type="password" autocomplete="new-password" required />
+                <small class="field-hint">Min. 10 characters with upper, lower, digit and symbol.</small></label>
+        </fieldset>
+
+        <button type="submit" class="btn btn--primary btn--block">Create workspace</button>
+    </form>
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

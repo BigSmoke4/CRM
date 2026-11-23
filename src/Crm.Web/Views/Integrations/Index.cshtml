@@ -1,0 +1,50 @@
+@model List<Crm.Web.Controllers.IntegrationsController.IntegrationListItem>
+@{
+    ViewData["Title"] = "Integrations";
+    var templates = (IEnumerable<(string Key, string Name, string Description)>)ViewBag.Templates;
+}
+<div class="page-grid">
+    <section class="panel neu">
+        <div class="panel__head">
+            <div><h2 class="panel__title">External data sources</h2><p class="panel__sub">@Model.Count configured integrations</p></div>
+            <a class="btn btn--primary" href="/Integrations/Create">+ New integration</a>
+        </div>
+        <table class="app-table">
+            <thead><tr><th>Name</th><th>System</th><th>Endpoint</th><th>Direction</th><th>Status</th><th>Last sync</th><th></th></tr></thead>
+            <tbody>
+            @foreach (var i in Model)
+            {
+                <tr>
+                    <td><a href="/Integrations/Edit/@i.Id"><strong>@i.Name</strong></a></td>
+                    <td>@i.ExternalSystem</td>
+                    <td class="truncate">@i.BaseUrl</td>
+                    <td>@i.Direction</td>
+                    <td>
+                        @if (i.IsEnabled)
+                        {
+                            <span class="chip chip--@(i.SyncStatus == Crm.Data.Entities.SyncStatus.Success ? "qualified" : i.SyncStatus == Crm.Data.Entities.SyncStatus.Failed ? "unqualified" : "")">@i.SyncStatus</span>
+                        }
+                        else { <span class="chip">Disabled</span> }
+                    </td>
+                    <td>@i.LastSyncAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                    <td class="row-actions"><a class="btn btn--sm" href="/Integrations/Edit/@i.Id">Manage</a></td>
+                </tr>
+            }
+            @if (!Model.Any()) { <tr><td colspan="7" class="empty-state">No integrations yet. Pick a template below or create a custom connection.</td></tr> }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Integration templates</h2><p class="panel__sub">Pre-configured starting points — no code required.</p></div>
+        <div class="template-grid">
+            @foreach (var t in templates)
+            {
+                <a class="template-card neu--sm" href="/Integrations/Create?template=@t.Key">
+                    <strong>@t.Name</strong>
+                    <small>@t.Description</small>
+                </a>
+            }
+        </div>
+    </section>
+</div>

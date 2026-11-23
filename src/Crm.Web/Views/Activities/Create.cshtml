@@ -1,0 +1,35 @@
+@model Crm.Web.ViewModels.ActivityFormVm
+@{
+    ViewData["Title"] = "New activity";
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Log activity</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+        <fieldset class="form-section">
+            <div class="form-grid">
+                <label class="field"><span>Type *</span><select asp-for="Type" asp-items="ViewBag.Types" class="input"></select></label>
+                <label class="field"><span>Subject *</span><input asp-for="Subject" class="input" required placeholder="e.g. Discovery call with ACME" /></label>
+                <label class="field"><span>Due date</span><input asp-for="DueAt" class="input" type="datetime-local" /></label>
+                <label class="field"><span>Duration (min)</span><input asp-for="DurationMinutes" class="input" type="number" min="0" /></label>
+                <label class="field"><span>Owner</span><select asp-for="OwnerId" asp-items="ViewBag.Users" class="input"><option value="">— Me —</option></select></label>
+            </div>
+        </fieldset>
+        <fieldset class="form-section">
+            <legend>Link to record</legend>
+            <div class="form-grid">
+                <label class="field"><span>Contact</span><select asp-for="ContactId" asp-items="ViewBag.Contacts" class="input"><option value="">—</option></select></label>
+                <label class="field"><span>Account</span><select asp-for="AccountId" asp-items="ViewBag.Accounts" class="input"><option value="">—</option></select></label>
+                <label class="field"><span>Lead</span><select asp-for="LeadId" asp-items="ViewBag.Leads" class="input"><option value="">—</option></select></label>
+                <label class="field"><span>Deal</span><select asp-for="DealId" asp-items="ViewBag.Deals" class="input"><option value="">—</option></select></label>
+            </div>
+        </fieldset>
+        <label class="field"><span>Details</span><textarea asp-for="Body" class="input" rows="4" placeholder="Call notes, email summary, meeting outcome…"></textarea></label>
+        <div class="btn-row">
+            <button type="submit" class="btn btn--primary">Save activity</button>
+            <a class="btn" href="/Activities">Cancel</a>
+        </div>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

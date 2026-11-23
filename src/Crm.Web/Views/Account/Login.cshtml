@@ -1,0 +1,49 @@
+@model Crm.Web.ViewModels.LoginVm
+@{
+    ViewData["Title"] = "Sign in";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in - Enterprise CRM</title>
+    <link rel="stylesheet" href="~/css/core/tokens.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/neumorphic.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/core/components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="auth-body">
+<div class="auth-card neu">
+    <div class="auth-card__brand">Enterprise<span>CRM</span></div>
+    <h1>Welcome back</h1>
+    <p class="auth-card__sub">Sign in to your workspace</p>
+
+    <form asp-action="Login" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ReturnUrl" />
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+        <label class="field">
+            <span>Email</span>
+            <input asp-for="Email" class="input" autocomplete="username" required />
+            <span asp-validation-for="Email" class="field-error"></span>
+        </label>
+        <label class="field">
+            <span>Password</span>
+            <input asp-for="Password" class="input" autocomplete="current-password" required />
+            <span asp-validation-for="Password" class="field-error"></span>
+        </label>
+        <label class="field field--inline">
+            <input asp-for="RememberMe" type="checkbox" /> <span>Remember me</span>
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">Sign in</button>
+    </form>
+</div>
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/dist/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

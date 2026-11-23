@@ -1,0 +1,58 @@
+@model List<Crm.Web.Controllers.LeadsController.LeadListItem>
+@{
+    ViewData["Title"] = "Leads";
+    var q = ViewBag.Q as string; var status = ViewBag.Status as string;
+    int page = ViewBag.Page; int totalPages = ViewBag.TotalPages; int total = ViewBag.Total;
+    var statuses = (IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Statuses;
+}
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Leads</h2><p class="panel__sub">@total unconverted leads</p></div>
+        <a class="btn btn--primary" href="/Leads/Create">+ New lead</a>
+    </div>
+    <form method="get" class="filter-bar">
+        <input name="q" value="@q" class="input input--sm" placeholder="Search leads…" />
+        <select name="status" class="input input--sm">
+            <option value="">All statuses</option>
+            @foreach (var s in statuses) { <option value="@s.Value" selected="@(status == s.Value)">@s.Text</option> }
+        </select>
+        <button class="btn btn--sm" type="submit">Filter</button>
+    </form>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>Company</th><th>Email</th><th>Source</th><th>Status</th><th>Score</th><th>Owner</th><th>Created</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var l in Model)
+        {
+            <tr>
+                <td><strong>@l.Name</strong></td>
+                <td>@l.CompanyName</td><td>@l.Email</td><td>@l.Source</td>
+                <td><span class="chip chip--@l.Status.ToString().ToLower()">@l.Status</span></td>
+                <td>@l.Score</td><td>@l.AssignedTo</td>
+                <td>@l.CreatedAt.ToString("yyyy-MM-dd")</td>
+                <td class="row-actions">
+                    <a class="btn btn--sm" href="/Leads/Edit/@l.Id">Edit</a>
+                    <form method="post" action="/Leads/Convert/@l.Id" class="inline-form" onsubmit="return confirm('Convert this lead to a contact?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="createAccount" value="true" />
+                        <button class="btn btn--sm btn--primary" type="submit">Convert</button>
+                    </form>
+                    <form method="post" action="/Leads/Delete/@l.Id" class="inline-form" onsubmit="return confirm('Delete this lead?');">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn--sm btn--danger" type="submit">✕</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="9" class="empty-state">No leads. <a href="/Leads/Create">Add a lead</a> or import via Contacts → Import.</td></tr> }
+        </tbody>
+    </table>
+    @if (totalPages > 1)
+    {
+        <nav class="pager">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <a class="pager__item @(i == page ? "is-active" : "")" href="/Leads?page=@i&q=@q&status=@status">@i</a>
+            }
+        </nav>
+    }
+</section>

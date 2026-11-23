@@ -1,0 +1,46 @@
+@model Crm.Data.Entities.WorkflowDefinition
+@{
+    var isEdit = Model.Id != Guid.Empty;
+    ViewData["Title"] = isEdit ? $"Workflow: {Model.Name}" : "New workflow";
+    var runs = (List<Crm.Data.Entities.WorkflowRun>?)ViewBag.Runs;
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">@ViewData["Title"]</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Name *</span><input asp-for="Name" class="input" required /></label>
+            <label class="field"><span>Trigger type</span><select asp-for="TriggerType" class="input">
+                @foreach (var t in Enum.GetValues<Crm.Data.Entities.WorkflowTriggerType>()) { <option value="@t" selected="@(Model.TriggerType == t)">@t</option> }
+            </select></label>
+            <label class="field"><span>Trigger entity</span><input asp-for="TriggerEntity" class="input" placeholder="Lead, Deal, Ticket, Contact…" /></label>
+            <label class="field"><span>Description</span><input asp-for="Description" class="input" /></label>
+        </div>
+        <label class="field"><span>Trigger config (JSON)</span><textarea asp-for="TriggerConfigJson" class="input" rows="3" placeholder='{"event":"created","field":"score","op":">","value":75}'></textarea></label>
+        <label class="field"><span>Steps (JSON)</span><textarea asp-for="DefinitionJson" class="input" rows="8" placeholder='{"steps":[{"type":"action","action":"create_task","subject":"Follow up new lead","dueDays":1},{"type":"action","action":"send_notification","title":"New hot lead"}]}'></textarea></label>
+        <p class="field-hint">Available actions: <code>create_task</code>, <code>send_notification</code>, <code>update_lead_status</code>, <code>send_webhook</code>, <code>delay</code>.</p>
+        <label class="field field--inline"><input asp-for="IsActive" type="checkbox" /> <span>Active</span></label>
+        <div class="btn-row">
+            <button class="btn btn--primary" type="submit">@(isEdit ? "Save" : "Create")</button>
+            @if (isEdit)
+            {
+                <button formaction="/Workflows/Run/@Model.Id" class="btn" type="submit" formnovalidate>Run now</button>
+            }
+            <a class="btn" href="/Workflows">Cancel</a>
+        </div>
+    </form>
+</section>
+@if (isEdit && runs != null)
+{
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Run history</h2></div>
+        <table class="app-table">
+            <thead><tr><th>Started</th><th>Status</th><th>Step</th><th>Error</th></tr></thead>
+            <tbody>
+            @foreach (var r in runs) { <tr><td>@r.StartedAt.ToString("MM-dd HH:mm")</td><td>@r.Status</td><td>@r.CurrentStep</td><td>@r.Error</td></tr> }
+            @if (!runs.Any()) { <tr><td colspan="4" class="empty-state">No runs yet.</td></tr> }
+            </tbody>
+        </table>
+    </section>
+}
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

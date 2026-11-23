@@ -1,0 +1,44 @@
+@{
+    ViewData["Title"] = "Reports";
+    dynamic sales = ViewBag.SalesReport; dynamic support = ViewBag.SupportReport; dynamic marketing = ViewBag.MarketingReport;
+}
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Reports</h2></div>
+        <div class="btn-row">
+            <a class="btn btn--sm" href="/Reports/Export?entity=contacts">Contacts CSV</a>
+            <a class="btn btn--sm" href="/Reports/Export?entity=deals">Deals CSV</a>
+            <a class="btn btn--sm" href="/Reports/Export?entity=tickets">Tickets CSV</a>
+            <a class="btn btn--sm" href="/Reports/Export?entity=activities">Activities CSV</a>
+        </div>
+    </div>
+</section>
+
+<div class="dash-grid">
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Sales</h2></div>
+        <dl class="detail-list">
+            <div><dt>Deals won</dt><dd>@sales.DealsWon</dd></div>
+            <div><dt>Revenue won</dt><dd>@(((decimal)sales.RevenueWon).ToString("C0"))</dd></div>
+            <div><dt>Deals lost</dt><dd>@sales.DealsLost</dd></div>
+            <div><dt>Pipeline value</dt><dd>@(((decimal)sales.PipelineValue).ToString("C0"))</dd></div>
+            <div><dt>Avg won deal</dt><dd>@(((decimal)sales.AvgDealSize).ToString("C0"))</dd></div>
+        </dl>
+    </section>
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Support</h2></div>
+        <dl class="detail-list">
+            <div><dt>Open tickets</dt><dd>@support.OpenTickets</dd></div>
+            <div><dt>Resolved (30d)</dt><dd>@support.ResolvedThisMonth</dd></div>
+            <div><dt>Avg CSAT</dt><dd>@(((double)support.AvgSatisfaction).ToString("0.0"))/5</dd></div>
+        </dl>
+    </section>
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Marketing</h2></div>
+        <dl class="detail-list">
+            <div><dt>Contacts</dt><dd>@marketing.Contacts</dd></div>
+            <div><dt>Open leads</dt><dd>@marketing.Leads</dd></div>
+            <div><dt>Lead→contact rate</dt><dd>@marketing.ConversionRate%</dd></div>
+        </dl>
+    </section>
+</div>

@@ -1,0 +1,105 @@
+@model Crm.Web.Controllers.DealsController.KanbanVm
+@{
+    ViewData["Title"] = "Sales Pipeline";
+}
+<section class="panel neu">
+    @Html.AntiForgeryToken()
+    <div class="panel__head">
+        <div><h2 class="panel__title">Pipeline</h2></div>
+        <div class="btn-row">
+            <form method="get" class="inline-form">
+                <select name="pipelineId" class="input input--sm" onchange="this.form.submit()">
+                    @foreach (var p in Model.Pipelines)
+                    {
+                        <option value="@p.Value" selected="@p.Selected">@p.Text</option>
+                    }
+                </select>
+            </form>
+            <a class="btn btn--primary" href="/Deals/Create">+ New deal</a>
+            <a class="btn" href="/Deals/Forecast">Forecast</a>
+        </div>
+    </div>
+
+    @if (!Model.Stages.Any())
+    {
+        <p class="panel__sub">No stages configured for this pipeline.</p>
+    }
+    else
+    {
+        <div class="kanban" id="kanban">
+            @foreach (var stage in Model.Stages)
+            {
+                <div class="kanban__col" data-stage="@stage.Id">
+                    <div class="kanban__col-head">
+                        <strong>@stage.Name</strong>
+                        <span class="chip">@stage.Deals.Count · @((Model.Totals.GetValueOrDefault(stage.Id)).ToString("C0"))</span>
+                    </div>
+                    <div class="kanban__cards" data-stage="@stage.Id">
+                        @foreach (var d in stage.Deals)
+                        {
+                            <a class="deal-card neu--sm" href="/Deals/Details/@d.Id" draggable="true" data-deal="@d.Id">
+                                <strong>@d.Name</strong>
+                                <span class="deal-card__amount">@d.Amount.ToString("C0") @d.Currency</span>
+                                <small>@d.Company</small>
+                                <small>@d.Owner · @(d.ExpectedClose?.ToString("MMM yyyy"))</small>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@section Scripts {
+<script>
+(function () {
+    const kanban = document.getElementById('kanban');
+    if (!kanban) return;
+    let dragged = null;
+
+    kanban.querySelectorAll('.deal-card').forEach(card => {
+        card.addEventListener('dragstart', e => {
+            dragged = card;
+            card.classList.add('is-dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => card.classList.remove('is-dragging'));
+    });
+
+    kanban.querySelectorAll('.kanban__cards').forEach(col => {
+        col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('is-over'); });
+        col.addEventListener('dragleave', () => col.classList.remove('is-over'));
+        col.addEventListener('drop', async e => {
+            e.preventDefault();
+            col.classList.remove('is-over');
+            if (!dragged) return;
+            const stageId = col.dataset.stage;
+            const dealId = dragged.dataset.deal;
+            const res = await fetch(`/Deals/MoveStage?dealId=${dealId}&stageId=${stageId}`, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': getToken() }
+            });
+            if (res.ok) {
+                col.appendChild(dragged);
+                updateCounts();
+            } else {
+                alert('Could not move deal.');
+            }
+        });
+    });
+
+    function getToken() {
+        const input = document.querySelector('input[name="__RequestVerificationToken"]');
+        return input ? input.value : '';
+    }
+    function updateCounts() {
+        document.querySelectorAll('.kanban__col').forEach(col => {
+            const n = col.querySelectorAll('.deal-card').length;
+            const head = col.querySelector('.kanban__col-head .chip');
+            if (head) head.textContent = n + ' deals';
+        });
+    }
+})();
+</script>
+}

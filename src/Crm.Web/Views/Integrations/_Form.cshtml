@@ -1,0 +1,163 @@
+@using Crm.Data.Entities
+@model Crm.Web.ViewModels.IntegrationFormVm
+@{
+    var isEdit = Model.Id.HasValue;
+    ViewData["Title"] = isEdit ? $"Integration: {Model.Name}" : "New integration";
+    var logs = (List<Crm.Data.Entities.SyncLog>?)ViewBag.SyncLogs;
+    var errs = (List<Crm.Data.Entities.SyncRecordError>?)ViewBag.RecentErrors;
+}
+
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">@ViewData["Title"]</h2></div>
+        <div class="btn-row">
+            <button type="button" class="btn" id="btnTest">Test connection</button>
+            @if (isEdit)
+            {
+                <button type="button" class="btn btn--primary" id="btnSync">Sync now</button>
+                <form method="post" action="/Integrations/Toggle/@Model.Id" class="inline-form">@Html.AntiForgeryToken()
+                    <button class="btn" type="submit">@(Model.IsEnabled ? "Disable" : "Enable")</button></form>
+            }
+        </div>
+    </div>
+
+    <div id="testResult" class="notice" hidden></div>
+    <div id="syncResult" class="notice" hidden></div>
+
+    <form method="post" class="form form--wide" id="integrationForm">
+        @Html.AntiForgeryToken()
+        @if (Model.Id.HasValue) { <input type="hidden" asp-for="Id" /> }
+        <input type="hidden" asp-for="TemplateKey" />
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+
+        <fieldset class="form-section">
+            <legend>General</legend>
+            <div class="form-grid">
+                <label class="field"><span>Name *</span><input asp-for="Name" class="input" required placeholder="e.g. Main ERP customers" /></label>
+                <label class="field"><span>External system</span><input asp-for="ExternalSystem" class="input" placeholder="SAP, Salesforce, custom…" /></label>
+                <label class="field"><span>Description</span><input asp-for="Description" class="input" /></label>
+                <label class="field"><span>Sync direction</span><select asp-for="Direction" asp-items="ViewBag.Directions" class="input"></select></label>
+                <label class="field"><span>Target entity</span><select asp-for="TargetEntity" asp-items="ViewBag.Entities" class="input"></select></label>
+                <label class="field"><span>Sync schedule</span><input asp-for="SyncSchedule" class="input" placeholder="every:30m, hourly, 0 9 * * *" /></label>
+            </div>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Endpoint</legend>
+            <div class="form-grid">
+                <label class="field"><span>Base URL *</span><input asp-for="BaseUrl" class="input" required placeholder="https://api.example.com" /></label>
+                <label class="field"><span>Endpoint path</span><input asp-for="Endpoint" class="input" placeholder="/v1/customers" /></label>
+                <label class="field"><span>HTTP method</span><select asp-for="HttpMethod" asp-items="ViewBag.HttpMethods" class="input"></select></label>
+                <label class="field"><span>Records path (JSON)</span><input asp-for="RecordsPath" class="input" placeholder="data.items or customers" /></label>
+                <label class="field"><span>External key field</span><input asp-for="ExternalKeyField" class="input" placeholder="id" /></label>
+                <label class="field"><span>Timeout (sec)</span><input asp-for="TimeoutSeconds" class="input" type="number" min="5" max="120" /></label>
+            </div>
+            <label class="field"><span>Request body (JSON, for POST/PUT)</span><textarea asp-for="RequestBody" class="input" rows="3" placeholder='{"filter":"active"}'></textarea></label>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Authentication</legend>
+            <div class="form-grid">
+                <label class="field"><span>Auth type</span><select asp-for="AuthType" class="input" id="authType">
+                    @foreach (var a in Enum.GetValues<IntegrationAuthType>()) { <option value="@a" selected="@(Model.AuthType == a)">@a</option> }
+                </select></label>
+                <label class="field auth-field" data-auth="ApiKey"><span>API key</span><input asp-for="ApiKey" class="input" placeholder="@(isEdit && Model.ApiKey != null ? "•••••••• (unchanged)" : "")" /></label>
+                <label class="field auth-field" data-auth="BearerToken,OAuth2"><span>Token</span><input asp-for="BearerToken" class="input" type="password" /></label>
+                <label class="field auth-field" data-auth="BasicAuth"><span>Username</span><input asp-for="Username" class="input" /></label>
+                <label class="field auth-field" data-auth="BasicAuth"><span>Password</span><input asp-for="Password" class="input" type="password" /></label>
+                <label class="field auth-field" data-auth="CustomHeader"><span>Header name</span><input asp-for="CustomHeaderName" class="input" placeholder="X-API-Key" /></label>
+                <label class="field auth-field" data-auth="CustomHeader"><span>Header value</span><input asp-for="CustomHeaderValue" class="input" type="password" /></label>
+            </div>
+            <p class="field-hint">Secrets are encrypted at rest and never displayed again.</p>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>OAuth2 (optional)</legend>
+            <div class="form-grid">
+                <label class="field"><span>Provider</span><select asp-for="OAuthProvider" class="input"><option value="">—</option><option value="gmail">Gmail / Google</option><option value="m365">Microsoft 365</option><option value="slack">Slack</option><option value="custom">Custom</option></select></label>
+                <label class="field"><span>Client ID</span><input asp-for="OAuthClientId" class="input" /></label>
+                <label class="field"><span>Client secret</span><input asp-for="OAuthClientSecret" class="input" type="password" /></label>
+                <label class="field"><span>Scope</span><input asp-for="OAuthScope" class="input" placeholder="leave blank for defaults" /></label>
+                <label class="field"><span>Authorize URL (custom)</span><input asp-for="OAuthAuthorizeUrl" class="input" /></label>
+                <label class="field"><span>Token URL (custom)</span><input asp-for="OAuthTokenUrl" class="input" /></label>
+            </div>
+            <p class="field-hint">Save first, then use <strong>Connect with OAuth</strong> on the integration page to complete consent in the browser.</p>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Advanced</legend>
+            <div class="form-grid">
+                <label class="field"><span>Page size</span><input asp-for="PageSize" class="input" type="number" min="1" max="1000" /></label>
+                <label class="field"><span>Max records per sync</span><input asp-for="MaxRecordsPerSync" class="input" type="number" min="1" /></label>
+                <label class="field"><span>Pagination mode</span>
+                    <select asp-for="PaginationMode" class="input"><option value="">none</option><option value="page">page</option><option value="offset">offset</option><option value="cursor">cursor</option></select></label>
+            </div>
+            <label class="field"><span>Custom headers (JSON)</span><textarea asp-for="CustomHeadersJson" class="input" rows="2" placeholder='[{"name":"X-Tenant","value":"acme"}]'></textarea></label>
+            <label class="field"><span>Query parameters (JSON)</span><textarea asp-for="QueryParamsJson" class="input" rows="2" placeholder='[{"name":"limit","value":"100"}]'></textarea></label>
+            <label class="field"><span>Sync options (JSON)</span><textarea asp-for="SyncOptionsJson" class="input" rows="2" placeholder='{"incrementalField":"updated_at","deleteHandling":"ignore","conflictResolution":"external-wins"}'></textarea></label>
+            <label class="field field--inline"><input asp-for="IsEnabled" type="checkbox" /> <span>Enabled</span></label>
+        </fieldset>
+
+        <fieldset class="form-section">
+            <legend>Field mapping</legend>
+            <p class="field-hint">JSON array: <code>[{"sourcePath":"customers[].name","target":"FirstName","transform":"trim"}]</code>. Targets: FirstName, LastName, Email, Phone, Mobile, JobTitle, CompanyName, Website, City, Country, Custom:&lt;field&gt;.</p>
+            <label class="field"><span>Mapping rules (JSON)</span><textarea asp-for="MappingRulesJson" class="input json-editor" rows="6" placeholder='[{"sourcePath":"name","target":"FirstName"},{"sourcePath":"email","target":"Email"}]'></textarea></label>
+            <button type="button" class="btn" id="btnPreview">Preview records &amp; fields</button>
+            <div id="previewResult" hidden>
+                <h3 class="subhead">Fields detected</h3>
+                <div id="previewFields" class="chip-row"></div>
+                <h3 class="subhead">Sample records</h3>
+                <div class="table-wrap"><pre id="previewRecords" class="code-block"></pre></div>
+            </div>
+        </fieldset>
+
+        <div class="btn-row">
+            <button type="submit" class="btn btn--primary">@(isEdit ? "Save changes" : "Save integration")</button>
+            @if (!isEdit)
+            {
+                <button type="submit" name="saveDisabled" value="true" class="btn">Save disabled</button>
+            }
+            <a class="btn" href="/Integrations">Cancel</a>
+        </div>
+    </form>
+</section>
+
+@if (isEdit && logs != null)
+{
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">Sync history</h2></div>
+        <table class="app-table">
+            <thead><tr><th>Started</th><th>Trigger</th><th>Status</th><th>Fetched</th><th>Created</th><th>Updated</th><th>Failed</th><th>Error</th></tr></thead>
+            <tbody>
+            @foreach (var l in logs)
+            {
+                <tr>
+                    <td>@l.StartedAt.ToString("MM-dd HH:mm")</td><td>@l.Trigger</td>
+                    <td><span class="chip">@l.Status</span></td>
+                    <td>@l.RecordsFetched</td><td>@l.RecordsCreated</td><td>@l.RecordsUpdated</td>
+                    <td>@l.RecordsFailed</td><td class="truncate">@l.ErrorSummary</td>
+                </tr>
+            }
+            @if (!logs.Any()) { <tr><td colspan="8" class="empty-state">No sync runs yet.</td></tr> }
+            </tbody>
+        </table>
+    </section>
+
+    @if (errs != null && errs.Any())
+    {
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Failed records</h2></div>
+            <table class="app-table">
+                <thead><tr><th>External key</th><th>Error</th></tr></thead>
+                <tbody>
+                @foreach (var e in errs) { <tr><td>@e.ExternalKey</td><td>@e.Error</td></tr> }
+                </tbody>
+            </table>
+        </section>
+    }
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/integrations.js" asp-append-version="true"></script>
+}

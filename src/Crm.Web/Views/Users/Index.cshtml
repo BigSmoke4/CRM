@@ -1,0 +1,45 @@
+@model List<Crm.Web.Controllers.UsersController.UserRow>
+@{ ViewData["Title"] = "Users"; var roles = (List<string>)ViewBag.Roles; }
+<div class="page-grid">
+<section class="panel neu">
+    <div class="panel__head"><div><h2 class="panel__title">Team members</h2><p class="panel__sub">@Model.Count users</p></div></div>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var u in Model)
+        {
+            <tr>
+                <td><strong>@u.Name</strong></td><td>@u.Email</td><td>@u.Roles</td>
+                <td><span class="chip chip--@(u.IsActive ? "qualified" : "unqualified")">@(u.IsActive ? "Active" : "Disabled")</span></td>
+                <td>@u.LastLogin?.ToString("yyyy-MM-dd HH:mm")</td>
+                <td class="row-actions">
+                    <form method="post" action="/Users/SetRole" class="inline-form" style="display:flex;gap:4px">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="userId" value="@u.Id" />
+                        <select name="role" class="input input--sm">@foreach (var r in roles) { <option value="@r" selected="@(u.Roles.Contains(r))">@r</option> }</select>
+                        <button class="btn btn--sm" type="submit">Set</button>
+                    </form>
+                    <form method="post" action="/Users/ToggleActive/@u.Id" class="inline-form">@Html.AntiForgeryToken()
+                        <button class="btn btn--sm @(u.IsActive ? "btn--danger" : "")" type="submit">@(u.IsActive ? "Disable" : "Enable")</button></form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Invite user</h2></div>
+    <form method="post" action="/Users/Invite" class="form">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Email *</span><input name="email" type="email" class="input" required /></label>
+            <label class="field"><span>First name</span><input name="firstName" class="input" /></label>
+            <label class="field"><span>Last name</span><input name="lastName" class="input" /></label>
+            <label class="field"><span>Role</span><select name="role" class="input">@foreach (var r in roles) { <option value="@r">@r</option> }</select></label>
+            <label class="field"><span>Temporary password *</span><input name="password" type="password" class="input" required /></label>
+        </div>
+        <button class="btn btn--primary" type="submit">Create user</button>
+    </form>
+</section>
+</div>

@@ -1,0 +1,58 @@
+@model Crm.Web.Controllers.DealsController.ForecastVm
+@{
+    ViewData["Title"] = "Sales Forecast";
+    string M(decimal v) => v.ToString("C0");
+}
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Forecast</h2></div>
+    <div class="kpi-grid kpi-grid--4">
+        <div class="kpi neu--sm"><span class="kpi__label">Pipeline value</span><span class="kpi__value">@M(Model.PipelineValue)</span></div>
+        <div class="kpi neu--sm"><span class="kpi__label">Weighted forecast</span><span class="kpi__value">@M(Model.WeightedValue)</span></div>
+        <div class="kpi neu--sm"><span class="kpi__label">Win rate</span><span class="kpi__value">@Model.WinRate%</span><span class="kpi__sub">@Model.WonCount won / @Model.LostCount lost</span></div>
+        <div class="kpi neu--sm"><span class="kpi__label">Open deals</span><span class="kpi__value">@Model.OpenCount</span></div>
+    </div>
+</section>
+
+<div class="dash-grid">
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">By stage</h2></div>
+        <table class="app-table">
+            <thead><tr><th>Stage</th><th>Deals</th><th>Value</th><th>Weighted</th></tr></thead>
+            <tbody>
+            @foreach (var s in Model.ByStage)
+            {
+                <tr><td>@s.Stage</td><td>@s.Count</td><td>@M(s.Value)</td><td>@M(s.Weighted)</td></tr>
+            }
+            @if (!Model.ByStage.Any()) { <tr><td colspan="4" class="empty-state">No open deals.</td></tr> }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">By owner</h2></div>
+        <table class="app-table">
+            <thead><tr><th>Owner</th><th>Deals</th><th>Value</th></tr></thead>
+            <tbody>
+            @foreach (var o in Model.ByOwner)
+            {
+                <tr><td>@o.Owner</td><td>@o.Count</td><td>@M(o.Value)</td></tr>
+            }
+            @if (!Model.ByOwner.Any()) { <tr><td colspan="3" class="empty-state">No data.</td></tr> }
+            </tbody>
+        </table>
+    </section>
+
+    <section class="panel neu">
+        <div class="panel__head"><h2 class="panel__title">By expected close month</h2></div>
+        <table class="app-table">
+            <thead><tr><th>Month</th><th>Value</th><th>Weighted</th></tr></thead>
+            <tbody>
+            @foreach (var m in Model.ByMonth)
+            {
+                <tr><td>@m.Month</td><td>@M(m.Value)</td><td>@M(m.Weighted)</td></tr>
+            }
+            @if (!Model.ByMonth.Any()) { <tr><td colspan="3" class="empty-state">Set expected close dates on deals to see monthly forecast.</td></tr> }
+            </tbody>
+        </table>
+    </section>
+</div>

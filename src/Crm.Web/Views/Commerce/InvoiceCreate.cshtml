@@ -1,0 +1,17 @@
+@model Crm.Web.ViewModels.InvoiceFormVm
+@{ ViewData["Title"] = "New invoice"; }
+<section class="panel neu">
+    <div class="panel__head"><h2 class="panel__title">Create invoice</h2></div>
+    <form method="post" class="form form--wide">
+        @Html.AntiForgeryToken()
+        <div class="form-grid">
+            <label class="field"><span>Customer</span><select asp-for="ContactId" asp-items="ViewBag.Contacts" class="input"><option value="">—</option></select></label>
+            <label class="field"><span>From order</span><select asp-for="OrderId" asp-items="ViewBag.Orders" class="input"><option value="">— none —</option></select></label>
+            <label class="field"><span>Due date</span><input asp-for="DueDate" class="input" type="date" /></label>
+            <label class="field"><span>Notes</span><input asp-for="Notes" class="input" /></label>
+        </div>
+        <p class="field-hint">Link an order to copy its line items onto the invoice.</p>
+        <button class="btn btn--primary" type="submit">Create invoice</button>
+    </form>
+</section>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

@@ -1,0 +1,42 @@
+@model List<Crm.Web.Controllers.AccountsController.AccountListItem>
+@{
+    ViewData["Title"] = "Accounts";
+    var q = ViewBag.Q as string; int page = ViewBag.Page; int totalPages = ViewBag.TotalPages; int total = ViewBag.Total;
+}
+<section class="panel neu">
+    <div class="panel__head">
+        <div><h2 class="panel__title">Accounts</h2><p class="panel__sub">@total companies</p></div>
+        <a class="btn btn--primary" href="/Accounts/Create">+ New account</a>
+    </div>
+    <form method="get" class="filter-bar">
+        <input name="q" value="@q" class="input input--sm" placeholder="Search accounts…" />
+        <button class="btn btn--sm" type="submit">Search</button>
+    </form>
+    <table class="app-table">
+        <thead><tr><th>Name</th><th>Industry</th><th>Location</th><th>Contacts</th><th>LTV</th><th>Owner</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var a in Model)
+        {
+            <tr>
+                <td><a href="/Accounts/Details/@a.Id"><strong>@a.Name</strong></a></td>
+                <td>@a.Industry</td>
+                <td>@a.City @a.Country</td>
+                <td>@a.ContactCount</td>
+                <td>@a.LifetimeValue.ToString("C0")</td>
+                <td>@a.AssignedTo</td>
+                <td class="row-actions"><a class="btn btn--sm" href="/Accounts/Edit/@a.Id">Edit</a></td>
+            </tr>
+        }
+        @if (!Model.Any()) { <tr><td colspan="7" class="empty-state">No accounts yet. <a href="/Accounts/Create">Create one</a>.</td></tr> }
+        </tbody>
+    </table>
+    @if (totalPages > 1)
+    {
+        <nav class="pager">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                <a class="pager__item @(i == page ? "is-active" : "")" href="/Accounts?page=@i&q=@q">@i</a>
+            }
+        </nav>
+    }
+</section>

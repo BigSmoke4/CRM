@@ -1,0 +1,112 @@
+@model Crm.Data.Entities.Account
+@{
+    ViewData["Title"] = Model.Name;
+    var contacts = (List<Crm.Data.Entities.Contact>)ViewBag.Contacts;
+    var deals = (List<Crm.Data.Entities.Deal>)ViewBag.Deals;
+    var activities = (List<Crm.Data.Entities.Activity>)ViewBag.Activities;
+    var invoices = (List<Crm.Data.Entities.Invoice>)ViewBag.Invoices;
+    var orders = (List<Crm.Data.Entities.Order>)ViewBag.Orders;
+}
+<div class="detail-grid">
+    <div class="detail-main">
+        <section class="panel neu">
+            <div class="panel__head">
+                <div><h2 class="panel__title">@Model.Name</h2><p class="panel__sub">@(Model.Industry) @(Model.Website != null ? $"· {Model.Website}" : "")</p></div>
+                <div class="btn-row">
+                    <a class="btn btn--sm" href="/Contacts/Create?accountId=@Model.Id">+ Contact</a>
+                    <a class="btn btn--sm" href="/Deals/Create">+ Deal</a>
+                </div>
+            </div>
+            <dl class="detail-list">
+                <div><dt>Location</dt><dd>@string.Join(", ", new[]{Model.City, Model.State, Model.Country}.Where(s => !string.IsNullOrEmpty(s)))</dd></div>
+                <div><dt>Size</dt><dd>@Model.CompanySize</dd></div>
+                <div><dt>Revenue</dt><dd>@(Model.AnnualRevenue?.ToString("C0") ?? "—")</dd></div>
+                <div><dt>Lifetime value</dt><dd>@Model.LifetimeValue.ToString("C0")</dd></div>
+                <div><dt>Phone / Email</dt><dd>@Model.Phone · @Model.Email</dd></div>
+                <div><dt>Owner</dt><dd>@(Model.AssignedTo != null ? $"{Model.AssignedTo.FirstName} {Model.AssignedTo.LastName}" : "—")</dd></div>
+            </dl>
+        </section>
+
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Contacts (@contacts.Count)</h2></div>
+            @if (contacts.Any())
+            {
+                <table class="app-table">
+                    <thead><tr><th>Name</th><th>Title</th><th>Email</th><th>Phone</th><th>Status</th></tr></thead>
+                    <tbody>
+                    @foreach (var c in contacts)
+                    {
+                        <tr>
+                            <td><a href="/Contacts/Details/@c.Id">@c.FirstName @c.LastName</a></td>
+                            <td>@c.JobTitle</td><td>@c.Email</td><td>@c.Phone</td>
+                            <td>@c.CustomerType / @c.LeadStatus</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <p class="panel__sub">No contacts linked yet.</p> }
+        </section>
+
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Deals</h2></div>
+            @if (deals.Any())
+            {
+                <table class="app-table">
+                    <thead><tr><th>Name</th><th>Stage</th><th>Amount</th><th>Expected close</th></tr></thead>
+                    <tbody>
+                    @foreach (var d in deals)
+                    {
+                        <tr>
+                            <td><a href="/Deals/Details/@d.Id">@d.Name</a></td>
+                            <td>@d.Stage?.Name</td><td>@d.Amount.ToString("C0")</td>
+                            <td>@d.ExpectedCloseDate?.ToString("yyyy-MM-dd")</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <p class="panel__sub">No deals yet.</p> }
+        </section>
+
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Orders &amp; invoices</h2></div>
+            @if (orders.Any() || invoices.Any())
+            {
+                <table class="app-table">
+                    <thead><tr><th>Type</th><th>Number</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>
+                    @foreach (var o in orders)
+                    {
+                        <tr><td>Order</td><td>@o.OrderNumber</td><td>@o.Total.ToString("C0")</td><td>@o.Status</td><td>@o.OrderDate.ToString("yyyy-MM-dd")</td></tr>
+                    }
+                    @foreach (var i in invoices)
+                    {
+                        <tr><td>Invoice</td><td>@i.InvoiceNumber</td><td>@i.Total.ToString("C0")</td><td>@i.Status</td><td>@i.IssueDate.ToString("yyyy-MM-dd")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <p class="panel__sub">No orders or invoices yet.</p> }
+        </section>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Timeline</h2></div>
+            @if (activities.Any())
+            {
+                <ul class="activity-feed">
+                    @foreach (var a in activities)
+                    {
+                        <li class="activity-feed__item">
+                            <span class="badge">@a.Type</span>
+                            <div><strong>@a.Subject</strong><small>@a.CreatedAt.ToString("MMM d, HH:mm")</small></div>
+                        </li>
+                    }
+                </ul>
+            }
+            else { <p class="panel__sub">No activity yet.</p> }
+        </section>
+    </aside>
+</div>

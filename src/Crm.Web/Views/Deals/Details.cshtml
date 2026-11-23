@@ -1,0 +1,65 @@
+@model Crm.Data.Entities.Deal
+@{
+    ViewData["Title"] = Model.Name;
+    var activities = (List<Crm.Data.Entities.Activity>)ViewBag.Activities;
+}
+<div class="detail-grid">
+    <div class="detail-main">
+        <section class="panel neu">
+            <div class="panel__head">
+                <div><h2 class="panel__title">@Model.Name</h2><p class="panel__sub">@Model.Amount.ToString("C0") @Model.Currency · @Model.Stage?.Name</p></div>
+                @if (ViewBag.CanEdit) { <a class="btn btn--sm btn--primary" href="/Deals/Edit/@Model.Id">Edit</a> }
+            </div>
+            <dl class="detail-list">
+                <div><dt>Pipeline stage</dt><dd>@Model.Stage?.Name (@Model.Probability%)</dd></div>
+                <div><dt>Expected close</dt><dd>@Model.ExpectedCloseDate?.ToString("yyyy-MM-dd")</dd></div>
+                <div><dt>Actual close</dt><dd>@Model.ActualCloseDate?.ToString("yyyy-MM-dd")</dd></div>
+                <div><dt>Account</dt><dd>@if (Model.Account != null) { <a href="/Accounts/Details/@Model.AccountId">@Model.Account.Name</a> }</dd></div>
+                <div><dt>Contact</dt><dd>@if (Model.Contact != null) { <a href="/Contacts/Details/@Model.ContactId">@Model.Contact.FirstName @Model.Contact.LastName</a> }</dd></div>
+                <div><dt>Owner</dt><dd>@(Model.Owner != null ? $"{Model.Owner.FirstName} {Model.Owner.LastName}" : "—")</dd></div>
+                <div><dt>Competitor</dt><dd>@Model.Competitor</dd></div>
+                <div><dt>Lost reason</dt><dd>@Model.LostReason</dd></div>
+                <div><dt>Created</dt><dd>@Model.CreatedAt.ToString("yyyy-MM-dd")</dd></div>
+            </dl>
+            @if (!string.IsNullOrEmpty(Model.Description)) { <p>@Model.Description</p> }
+            @if (!string.IsNullOrEmpty(Model.Notes)) { <h3 class="subhead">Notes</h3><p>@Model.Notes</p> }
+        </section>
+
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Products</h2></div>
+            @if (Model.Products.Any())
+            {
+                <table class="app-table">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Unit price</th></tr></thead>
+                    <tbody>
+                    @foreach (var p in Model.Products)
+                    {
+                        <tr><td>@p.Name</td><td>@p.Quantity</td><td>@p.UnitPrice.ToString("C2")</td></tr>
+                    }
+                    </tbody>
+                </table>
+            }
+            else { <p class="panel__sub">No line items.</p> }
+        </section>
+    </div>
+
+    <aside class="detail-side">
+        <section class="panel neu">
+            <div class="panel__head"><h2 class="panel__title">Activity</h2></div>
+            @if (activities.Any())
+            {
+                <ul class="activity-feed">
+                    @foreach (var a in activities)
+                    {
+                        <li class="activity-feed__item">
+                            <span class="badge">@a.Type</span>
+                            <div><strong>@a.Subject</strong><small>@a.CreatedAt.ToString("MMM d, HH:mm")</small></div>
+                        </li>
+                    }
+                </ul>
+            }
+            else { <p class="panel__sub">No activity yet.</p> }
+            <a class="btn btn--sm" href="/Activities/Create?dealId=@Model.Id">+ Log activity</a>
+        </section>
+    </aside>
+</div>

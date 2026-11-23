@@ -1,0 +1,77 @@
+@model List<Crm.Web.Controllers.ContactsController.ContactListItem>
+@{
+    ViewData["Title"] = "Contacts";
+    var q = ViewBag.Q as string; var tag = ViewBag.Tag as string; var status = ViewBag.Status as string;
+    int page = ViewBag.Page; int totalPages = ViewBag.TotalPages; int total = ViewBag.Total;
+}
+
+<section class="panel neu">
+    <div class="panel__head">
+        <div>
+            <h2 class="panel__title">Contacts</h2>
+            <p class="panel__sub">@total records</p>
+        </div>
+        <div class="btn-row">
+            <a class="btn" href="/Contacts/Export?q=@q&tag=@tag">Export CSV</a>
+            <a class="btn" href="/Contacts/Import">Import</a>
+            <a class="btn btn--primary" href="/Contacts/Create">+ New contact</a>
+        </div>
+    </div>
+
+    <form method="get" class="filter-bar">
+        <input name="q" value="@q" class="input input--sm" placeholder="Search name, email, phone…" />
+        <input name="tag" value="@tag" class="input input--sm" placeholder="Tag" />
+        <select name="status" class="input input--sm">
+            <option value="">All types</option>
+            @foreach (var t in Enum.GetValues<Crm.Data.Entities.CustomerType>())
+            {
+                <option value="@t" selected="@(status == t.ToString())">@t</option>
+            }
+        </select>
+        <button class="btn btn--sm" type="submit">Filter</button>
+        <a class="btn btn--sm" href="/Contacts">Reset</a>
+    </form>
+
+    <table class="app-table">
+        <thead>
+            <tr><th>Name</th><th>Title</th><th>Company</th><th>Email</th><th>Phone</th><th>Type</th><th>Score</th><th>Owner</th><th></th></tr>
+        </thead>
+        <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td><a href="/Contacts/Details/@c.Id"><strong>@c.Name</strong></a></td>
+                <td>@c.JobTitle</td>
+                <td>@c.Company</td>
+                <td>@c.Email</td>
+                <td>@c.Phone</td>
+                <td><span class="chip">@c.CustomerType</span></td>
+                <td>@c.LeadScore</td>
+                <td>@c.AssignedTo</td>
+                <td class="row-actions">
+                    <a class="btn btn--sm" href="/Contacts/Edit/@c.Id">Edit</a>
+                    <form method="post" action="/Contacts/Delete/@c.Id" class="inline-form" onsubmit="return confirm('Delete this contact?');">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn--sm btn--danger" type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        @if (!Model.Any())
+        {
+            <tr><td colspan="9" class="empty-state">No contacts found. <a href="/Contacts/Create">Add your first contact</a> or import a CSV.</td></tr>
+        }
+        </tbody>
+    </table>
+
+    @if (totalPages > 1)
+    {
+        <nav class="pager">
+            @for (var i = 1; i <= totalPages; i++)
+            {
+                var active = i == page ? "is-active" : "";
+                <a class="pager__item @active" href="/Contacts?page=@i&q=@q&tag=@tag&status=@status">@i</a>
+            }
+        </nav>
+    }
+</section>
