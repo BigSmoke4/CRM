@@ -1,63 +1,183 @@
-# Enterprise CRM
+# 🚀 Enterprise CRM
 
-ASP.NET Core 9 MVC + EF Core + SQL Server (multi-tenant modular monolith).
+> A production-grade, multi-tenant **AI-powered CRM** — modular monolith built with ASP.NET Core 9 MVC, EF Core, and SQL Server. Standalone-ready with a visual integration engine, OAuth2, payments, vector RAG, and workflow automation.
 
-## Stack
-- Backend: ASP.NET Core 9 MVC, C# (net9.0)
-- Data: EF Core 9 + SQL Server (tested on `localhost\SQLEXPRESS`)
-- Auth: ASP.NET Identity (cookie auth, lockout, TOTP 2FA, role + permission claims)
-- Design system: `css/core` + `css/modules` (neumorphic soft-UI), copied to `src/Crm.Web/wwwroot/css`
+![.NET](https://img.shields.io/badge/.NET-9-512BD4?logo=dotnet)
+![C#](https://img.shields.io/badge/C%23-latest-239120?logo=csharp)
+![EF Core](https://img.shields.io/badge/EF%20Core-9-5105BF?logo=dotnet)
+![SQL Server](https://img.shields.io/badge/SQL%20Server-Express-CC2927?logo=microsoftsqlserver)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-## Layout
+---
+
+## ✨ Features
+
+| Module | What's inside |
+|---|---|
+| 🔐 **Auth & Tenancy** | ASP.NET Identity, lockout, TOTP 2FA, public self-signup (each signup = isolated org workspace), role + granular permission system |
+| 👥 **CRM Core** | Contacts, Accounts, Leads (scoring + convert), Activities/Tasks, unified timelines, custom fields |
+| 📊 **Sales** | Visual pipeline Kanban (drag & drop), forecasting, weighted pipeline, win-rate reports |
+| 🔌 **Integrations** | Visual API builder — 9 auth modes (API key, Bearer, Basic, OAuth2, custom header…), custom headers/query/body, SSRF-guarded test connection, JSON structure explorer, field mapping → Contacts/Accounts/Leads, scheduled sync + sync logs, 9 templates |
+| 🤖 **AI** | Provider config (OpenAI / Anthropic / Gemini / any OpenAI-compatible endpoint), encrypted keys, test button, assistants chat, **vector-embedding RAG** over knowledge base |
+| 📚 **Knowledge Base** | Upload txt/md/csv/json/html docs → auto-chunk → embed → cosine-similarity retrieval |
+| 🎫 **Helpdesk** | Tickets with SLA fields, replies, assignment, priorities |
+| 📣 **Marketing** | Campaigns with real SMTP send, audience selection |
+| ⚙️ **Workflows** | JSON step engine — tasks, notifications, lead updates, webhooks, delays; scheduled triggers |
+| 🛒 **Commerce** | Products/services, orders, invoices |
+| 💳 **Payments** | Real **Stripe** Checkout — encrypted keys, hosted payment page, HMAC-SHA256 webhook verification |
+| 🔁 **Background Jobs** | Hosted service: scheduled integration syncs + workflow triggers every 60s |
+| 📈 **Reports** | Dashboard KPIs, pipeline/forecast/revenue reports, CSV export |
+| 📥 **Import/Export** | CSV import wizard (upload → preview → dedupe → commit), CSV exports everywhere |
+| 🎨 **UI** | Centralized neumorphic design system (`css/`), dark-ready tokens, responsive, permission-aware sidebar with collapsible groups |
+| 🔒 **Security** | Tenant isolation via EF global filters, encrypted secrets (Data Protection **keys stored in DB**), audit log, rate-limited auth, security headers, SSRF guard |
+
+---
+
+## 🏗️ Architecture
+
 ```
-src/Crm.Data    Entities, ApplicationDbContext (tenant query filters), Permissions, migrations
-src/Crm.Web     MVC app: Controllers per module, Services, ViewModels, Views
-css/            Centralized design system (source of truth; mirrored into wwwroot)
-tests/Crm.Tests xUnit test project
-docs/           Architecture + ops notes
+┌─────────────────────────────────────────────────────────┐
+│                     Crm.Web (MVC)                        │
+│  Controllers · Services · Views · wwwroot (design sys)  │
+├─────────────────────────────────────────────────────────┤
+│                     Crm.Data                            │
+│  Entities · ApplicationDbContext (tenant filters)       │
+│  Permissions · EF Migrations                            │
+├─────────────────────────────────────────────────────────┤
+│              SQL Server (per-tenant rows)                │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Run
-```
+**Modular monolith** — clean module boundaries inside one deployable app:
+- `src/Crm.Data` — entities, DbContext, permissions, migrations
+- `src/Crm.Web` — controllers/services/views per module
+- `css/` — centralized design system (source of truth, mirrored to `wwwroot`)
+- `tests/Crm.Tests` — xUnit test project
+
+**Multi-tenancy:** every tenant entity carries `OrganizationId` with automatic EF global query filters — companies never see each other's data. New signups get a fully isolated workspace (org + admin + default pipeline).
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- [.NET 9 SDK](https://dotnet.microsoft.com/download) (or SDK 10 — projects target `net9.0`)
+- SQL Server (Express works: `localhost\SQLEXPRESS`)
+
+### Run locally
+```bash
+git clone https://github.com/BigSmoke4/CRM.git
+cd CRM
 dotnet restore
 cd src/Crm.Web
-dotnet ef database update          # creates CrmDb on first run (migrations auto-apply at startup too)
+dotnet ef database update        # creates schema (also auto-applies at startup)
 dotnet run --urls http://localhost:5080
 ```
-First request to `/` redirects to `/Setup` (wizard) when no organization exists.
 
-## Configuration
-`appsettings.json` → `ConnectionStrings:Default` (SQL Server). Secrets for integrations and
-AI keys are encrypted at rest via ASP.NET Core Data Protection (key ring in `.keys/` at repo root,
-override with `DataProtection:KeyRingPath`). SMTP for campaigns: `Smtp:*` config keys.
+Open **http://localhost:5080** → you'll be redirected to **`/Setup`** (first-run wizard) or **`/Account/Register`** for self-signup.
 
-## Modules implemented
-Setup wizard · Auth (login/2FA/lockout) · Dashboard KPIs · Contacts/Accounts/Leads (CRUD,
-CSV import/export, lead scoring, convert-to-contact) · Activities/Tasks · Kanban deals +
-forecast · Tickets (SLA fields, replies, assignment) · Campaigns (SMTP send when configured) ·
-Workflows (JSON step engine: tasks, notifications, lead status, webhooks, delay) ·
-Commerce (products, orders, invoices) · Users/roles · Settings (org, custom fields, pipeline
-stages, audit log) · Reports + CSV export · **Integrations** (visual API builder: auth types,
-custom headers/query/body, SSRF-guarded test connection, JSON structure explorer, field
-mapping to Contact/Account/Lead, sync engine with logs and per-record errors, templates) ·
-**AI** (provider config for OpenAI/Anthropic/Gemini/OpenAI-compatible, test connection,
-assistants chat with RAG keyword retrieval over indexed knowledge docs).
+### Demo data
+Sign in → **Settings → Load demo data** — seeds contacts, accounts, leads, deals, tickets, products, orders, invoices, campaigns, workflows across every module (idempotent, once per org).
 
-## Security notes
-- Every tenant entity has `OrganizationId` + EF global query filter (super-admin bypass).
-- Permission claims computed per request by `PermissionClaimsTransformation`;
-  policies resolved dynamically by `PermissionPolicyProvider`.
-- Integration secrets encrypted via `ISecretProtector` (Data Protection); masked in UI.
-- Outbound integration calls go through `OutboundUrlGuard` (blocks private IPs, loopback,
-  link-local/metadata endpoints, non-http schemes).
-- Antiforgery auto-validated; security headers + rate limiting on auth endpoints.
+---
 
-## Known limitations / next steps
-- AI RAG uses keyword retrieval; embedding/vector search is the upgrade path
-  (`KnowledgeChunk.EmbeddingJson` column already exists).
-- Workflow triggers fire via `WorkflowEngine.RunAsync` (manual + can be invoked from
-  record events); a hosted `BackgroundService` scheduler for sync schedules is the next step.
-- OAuth2 flows for Gmail/M365/etc. need provider app registration; bearer/API-key/custom-header
-  auth works today.
-- Excel (.xlsx) import: CSV supported now; add ClosedXML/EPPlus reader for .xlsx.
-- Payment processing intentionally not faked — wire a real provider (Stripe) when needed.
+## ⚙️ Configuration
+
+`src/Crm.Web/appsettings.json`:
+
+```json
+{
+  "ConnectionStrings": {
+    "Default": "Server=localhost\\SQLEXPRESS;Database=CrmDb;Trusted_Connection=True;..."
+  },
+  "Smtp": { "Host": "...", "Port": 587, "User": "...", "Pass": "..." }
+}
+```
+
+| Secret | Where it's entered | Storage |
+|---|---|---|
+| Integration API keys/tokens | Integrations → edit connection | Encrypted (Data Protection, keys in DB) |
+| OAuth2 client secrets | Integrations → OAuth section | Encrypted |
+| AI provider keys | AI → Providers | Encrypted, masked after save |
+| Stripe keys | Payments → Settings | Encrypted |
+| SMTP password | `appsettings.json` or env vars | Config / env |
+
+**Environment variables** override anything: `ConnectionStrings__Default`, `Smtp__Pass`, etc.
+
+---
+
+## 🔌 Integrations — how it works
+
+1. **Integrations → New** → pick a template (ERP customers/products/orders/invoices, website contacts, e-commerce…) or start blank
+2. Set URL, method, auth type, headers, query params, body
+3. **Test connection** → status, duration, response preview + JSON structure explorer
+4. **Field mapping** → map JSON paths to Contact/Account/Lead fields (with transforms)
+5. **Sync now** or set a schedule (`every:30m`, `hourly`, `daily`) — background service runs it automatically
+6. **Logs** → per-run status + per-record errors
+
+**OAuth2:** pick Gmail/Google, Microsoft 365, Slack, or custom → enter your app's client ID/secret → **Connect** → browser consent → tokens stored encrypted with refresh support.
+
+**SSRF protection:** outbound calls are blocked for private IPs, loopback, cloud metadata endpoints, and non-HTTP schemes.
+
+---
+
+## 🤖 AI & RAG
+
+- **Providers:** OpenAI, Anthropic, Gemini, or any OpenAI-compatible endpoint (local models too) — paste key + model, hit **Test**
+- **Assistants:** create bots with custom instructions → chat at `/Ai` with CRM context
+- **Knowledge Base:** upload documents → auto-chunked → embedded via your provider's `/embeddings` → chat retrieves by **cosine similarity** (keyword fallback when no embedding provider configured)
+
+---
+
+## 💳 Payments (Stripe)
+
+1. Create a Stripe account → get `pk_`/`sk_`/`whsec_` keys
+2. **Payments → Settings** → paste keys (encrypted)
+3. Create an invoice → **Pay** button → customer completes Stripe Checkout
+4. Register webhook `https://your-host/Payments/Webhook` in Stripe dashboard → invoice auto-marks paid on `checkout.session.completed`
+
+---
+
+## 🛡️ Security model
+
+- **Tenant isolation** — EF global query filters on every tenant entity; super-admin bypass
+- **Permissions** — `Permissions.cs` catalog → role mapping → dynamic policy provider; nav + APIs permission-aware
+- **Secrets** — never plaintext; Data Protection with **keys stored in the database** (shared-hosting safe)
+- **Auth** — cookie auth, lockout, 2FA, rate-limited endpoints, antiforgery everywhere
+- **Outbound** — `OutboundUrlGuard` blocks SSRF; all integration HTTP via `IntegrationHttpService`
+- **Audit** — audit log for sensitive actions
+
+---
+
+## 📦 Publishing
+
+```bash
+dotnet publish src/Crm.Web -c Release -o publish
+```
+
+Deploy the folder to any ASP.NET Core 9 host (IIS, Kestrel, Docker, Azure, shared hosting). Migrations auto-apply on startup. For shared hosting, DataProtection keys live in the DB — no filesystem dependencies.
+
+---
+
+## 🧪 Tests
+
+```bash
+dotnet test tests/Crm.Tests
+```
+
+Pure/testable units: `JsonExplorer`, `IntegrationSyncService.Transform`, `OutboundUrlGuard`, permission mapping.
+
+---
+
+## 🗺️ Roadmap / known gaps
+
+- [ ] Excel (.xlsx) import/export (CSV fully works)
+- [ ] Durable job queue for multi-instance deployments (current scheduler is single-instance safe)
+- [ ] Provider-specific OAuth scope tuning per integration type
+- [ ] More report types (custom report builder)
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).
