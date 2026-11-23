@@ -77,6 +77,7 @@ builder.Services.AddScoped<Crm.Web.Services.Ai.EmbeddingService>();
 builder.Services.AddScoped<Crm.Web.Services.OAuth.OAuthFlowService>();
 builder.Services.AddScoped<Crm.Web.Services.Payments.StripePaymentService>();
 builder.Services.AddScoped<Crm.Web.Services.DemoDataSeeder>();
+builder.Services.AddScoped<Crm.Web.Services.WorkspaceProvisioner>();
 builder.Services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
 builder.Services.AddAuthorization();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();

@@ -1,0 +1,20 @@
+@model Crm.Web.ViewModels.SetupVm
+@{ ViewData["Title"] = "Create your account"; }
+<div class="auth-card neu">
+    <h1 class="auth-title">Create your workspace</h1>
+    <p class="auth-sub">Start your own CRM — your data is completely isolated.</p>
+    <form method="post" class="form">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="form-errors"></div>
+        <label class="field"><span>Organization name *</span><input asp-for="OrganizationName" class="input" required placeholder="Acme Inc." /></label>
+        <div class="form-grid">
+            <label class="field"><span>First name *</span><input asp-for="AdminFirstName" class="input" required /></label>
+            <label class="field"><span>Last name *</span><input asp-for="AdminLastName" class="input" required /></label>
+        </div>
+        <label class="field"><span>Work email *</span><input asp-for="AdminEmail" class="input" type="email" required /></label>
+        <label class="field"><span>Password *</span><input asp-for="AdminPassword" class="input" type="password" required /></label>
+        <button class="btn btn--primary btn--block" type="submit">Create account</button>
+    </form>
+    <p class="auth-foot">Already have an account? <a href="/Account/Login">Sign in</a></p>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

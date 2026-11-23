@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using Crm.Data.Entities;
 using Crm.Web.ViewModels;
+using Crm.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,18 @@ public class AccountController : Controller
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly WorkspaceProvisioner _provisioner;
     private readonly ILogger<AccountController> _logger;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
+        WorkspaceProvisioner provisioner,
         ILogger<AccountController> logger)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _provisioner = provisioner;
         _logger = logger;
     }
 
@@ -69,6 +73,32 @@ public class AccountController : Controller
 
         ModelState.AddModelError(string.Empty, "Invalid email or password.");
         return View(vm);
+    }
+
+    /// <summary>Public signup: creates a new organization workspace with its admin user.</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult Register() => View(new SetupVm());
+
+    [HttpPost, ValidateAntiForgeryToken]
+    [AllowAnonymous]
+    [EnableRateLimiting("auth")]
+    public async Task<IActionResult> Register(SetupVm vm)
+    {
+        if (!ModelState.IsValid) return View(vm);
+        try
+        {
+            var user = await _provisioner.CreateAsync(vm.OrganizationName, vm.AdminFirstName,
+                vm.AdminLastName, vm.AdminEmail, vm.AdminPassword);
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            _logger.LogInformation("Self-signup: org {Org} created with admin {Email}", user.Organization!.Name, user.Email);
+            return RedirectToAction("Index", "Home");
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(vm);
+        }
     }
 
     [HttpGet]
