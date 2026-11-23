@@ -163,3 +163,5 @@ code { background: var(--bg); padding: 2px 6px; border-radius: 6px; font-size: .
 .nav-group--toggle::after { content: "BE"; font-size: .8rem; opacity: .6; transition: transform var(--dur) var(--ease); }
 .nav-group--toggle.is-collapsed::after { transform: rotate(-90deg); }
 .nav-list li.is-hidden { display: none; }
+.sidebar nav { min-height: 0; }
+.sidebar .nav-list { align-content: start; }
