@@ -14,9 +14,10 @@ public class SettingsController : Controller
     private readonly ApplicationDbContext _db;
     private readonly ITenantContext _tenant;
     private readonly IAuditService _audit;
+    private readonly Crm.Web.Services.DemoDataSeeder _seeder;
 
-    public SettingsController(ApplicationDbContext db, ITenantContext tenant, IAuditService audit)
-    { _db = db; _tenant = tenant; _audit = audit; }
+    public SettingsController(ApplicationDbContext db, ITenantContext tenant, IAuditService audit, Crm.Web.Services.DemoDataSeeder seeder)
+    { _db = db; _tenant = tenant; _audit = audit; _seeder = seeder; }
 
     [HttpGet, Authorize(Policy = Permissions.SettingsView)]
     public async Task<IActionResult> Index()
@@ -67,6 +68,16 @@ public class SettingsController : Controller
     {
         var f = await _db.CustomFieldDefinitions.FirstOrDefaultAsync(x => x.Id == id);
         if (f != null) { _db.CustomFieldDefinitions.Remove(f); await _db.SaveChangesAsync(); }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = Permissions.SettingsManage)]
+    public async Task<IActionResult> SeedDemo()
+    {
+        var seeded = await _seeder.SeedAsync(_tenant.OrganizationId!.Value, _tenant.UserId);
+        TempData[seeded > 0 ? "Success" : "Error"] = seeded > 0
+            ? "Demo data loaded across all modules."
+            : "Demo data already exists for this organization.";
         return RedirectToAction(nameof(Index));
     }
 

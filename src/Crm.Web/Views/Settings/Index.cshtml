@@ -2,7 +2,9 @@
 @{ ViewData["Title"] = "Settings"; }
 <div class="page-grid">
 <section class="panel neu">
-    <div class="panel__head"><h2 class="panel__title">Organization</h2></div>
+    <div class="panel__head"><h2 class="panel__title">Organization</h2>
+        <form method="post" action="/Settings/SeedDemo" class="inline-form" onsubmit="return confirm('Load demo data across all modules? Existing data is kept; this only runs once per organization.');">@Html.AntiForgeryToken()
+            <button class="btn btn--sm" type="submit">Load demo data</button></form></div>
     <form method="post" action="/Settings/SaveOrganization" class="form">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
